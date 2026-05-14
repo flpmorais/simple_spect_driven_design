@@ -1,0 +1,67 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["@mohak34/opencode-notifier@latest"],
+  "permission": {
+    "skill": {
+      "*": "deny"
+    }
+  },
+  "agent": {
+    "build": {
+      "permission": {
+        "skill": {
+          "*": "deny"
+        }
+      }
+    },
+    "plan": {
+      "permission": {
+        "skill": {
+          "*": "deny"
+        }
+      }
+    },
+    "general": {
+      "permission": {
+        "skill": {
+          "*": "deny"
+        }
+      }
+    },
+    "explore": {
+      "permission": {
+        "skill": {
+          "*": "deny"
+        }
+      }
+    },
+    "scout": {
+      "permission": {
+        "skill": {
+          "*": "deny"
+        }
+      }
+    },
+    "compaction": {
+      "permission": {
+        "skill": {
+          "*": "deny"
+        }
+      }
+    },
+    "title": {
+      "permission": {
+        "skill": {
+          "*": "deny"
+        }
+      }
+    },
+    "summary": {
+      "permission": {
+        "skill": {
+          "*": "deny"
+        }
+      }
+    }
+  }
+}

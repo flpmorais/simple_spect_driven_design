@@ -1,0 +1,23 @@
+# DO NOT EDIT -- overwritten on every update.
+#
+# Workflow customization surface for bmad-business-docs. Mirrors the
+# agent customization shape under the [workflow] namespace.
+
+[workflow]
+
+activation_steps_prepend = []
+activation_steps_append = []
+
+persistent_facts = [
+  "Business documentation is organized by business domain, not technical layer.",
+  "Implementation behavior is observed evidence, not automatically approved business policy.",
+  "If business intent and implementation disagree, record a discrepancy instead of silently changing either side.",
+  "file:{project-root}/AGENTS.md",
+  "file:{project-root}/docs/business-rules.md",
+  "file:{project-root}/_bmad-output/planning-artifacts/prd.md",
+  "file:{project-root}/_bmad-output/planning-artifacts/architecture.md",
+]
+
+business_artifacts_root = "{output_folder}/business-artifacts"
+
+on_complete = ""

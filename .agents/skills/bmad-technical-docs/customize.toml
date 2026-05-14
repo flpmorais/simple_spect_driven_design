@@ -1,0 +1,27 @@
+# DO NOT EDIT -- overwritten on every update.
+#
+# Workflow customization surface for bmad-technical-docs. Mirrors the
+# agent customization shape under the [workflow] namespace.
+
+[workflow]
+
+# Steps to run before the standard activation.
+activation_steps_prepend = []
+
+# Steps to run after greet but before the workflow begins.
+activation_steps_append = []
+
+# Persistent facts the workflow keeps in mind for the whole run.
+# Entries are literal facts or file references prefixed with `file:`.
+persistent_facts = [
+  "Technical documentation must be evidence-backed and strictly about current implementation unless a planned state is explicitly sourced.",
+  "file:{project-root}/AGENTS.md",
+  "file:{project-root}/docs/**/*.md",
+  "file:{project-root}/_bmad-output/planning-artifacts/architecture.md",
+]
+
+# Default output folder for maintained technical docs.
+technical_docs_root = "{project_knowledge}/technical"
+
+# Optional terminal instruction executed by the completion step.
+on_complete = ""
