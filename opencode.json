@@ -10,7 +10,9 @@
     "build": {
       "permission": {
         "skill": {
-          "*": "deny"
+          "*": "deny",
+          "documentation-maintainer": "allow",
+          "memory-implementer": "allow"
         }
       }
     },
@@ -60,6 +62,16 @@
       "permission": {
         "skill": {
           "*": "deny"
+        }
+      }
+    },
+    "ssd_planner": {
+      "permission": {
+        "skill": {
+          "*": "deny",
+          "ssd-brainstorming": "allow",
+          "ssd-product-brief-create": "allow",
+          "ssd-product-brief-edit": "allow"
         }
       }
     }

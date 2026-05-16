@@ -1,2 +1,6 @@
 __pycache__/
 *.pyc
+wiki/node_modules/
+wiki/.svelte-kit/
+wiki/build/
+wiki/.output/

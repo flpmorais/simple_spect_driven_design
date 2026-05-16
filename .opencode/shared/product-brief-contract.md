@@ -13,67 +13,97 @@ The Product Brief is a business/product definition for non-experts. Priority ord
 
 Include differentiation, positioning, practical constraints, assumptions, and useful open questions.
 
-Exclude technology stack, architecture, databases, hosting, containers, frameworks, implementation patterns, detailed requirements, MVP scope, success metrics, epics, stories, delivery plans, and engineering tasks.
-
-If the product itself is a technical tool, discuss only high-level product value, user problem, audience, and concept. Do not discuss implementation details.
+Exclude technology stack, architecture, databases, hosting, containers, frameworks, implementation patterns, detailed requirements, MVP scope, success metrics, epics, stories, delivery plans, and engineering tasks. If the product is technical, discuss only product value, user problem, audience, and concept.
 
 ## Required Sections
 
-Use the template at `.opencode/skills/ssd-product-brief-create/templates/product-brief-template.md` for new briefs and to repair malformed briefs.
+Store the Product Brief as SQLite-backed `Artifact` memory with kind `product-brief`. Use these exact section keys and headings:
 
-Required sections:
+| Section Key | Heading |
+| --- | --- |
+| `why-this-exists` | Why This Exists |
+| `product-definition` | Product Definition |
+| `problem` | Problem |
+| `high-level-solution` | High-Level Solution |
+| `audience` | Audience |
+| `necessity-and-differentiation` | Necessity And Differentiation |
+| `positioning` | Positioning |
+| `practical-constraints` | Practical Constraints |
+| `assumptions` | Assumptions |
+| `open-questions` | Open Questions |
 
-- Why This Exists
-- Product Definition
-- Problem
-- High-Level Solution
-- Audience
-- Necessity And Differentiation
-- Positioning
-- Practical Constraints
-- Assumptions
-- Open Questions
+Unsupported required sections must be `Unknown` or a clear assumption. Do not invent content.
 
-If source material does not support a required section, state `Unknown` or record a clear assumption. Do not invent content.
+Every stored statement must be grounded in explicit user input, confirmed source memory, a user-provided file, accepted brainstorm idea memory, an explicit user-approved assumption, or `Unknown`.
+
+Do not turn broad labels such as "I am a painter", "I need an app", or yes/no answers into complete prose. If support is partial, keep only the supported part and move the rest to `Unknown`, `Assumption:`, or Open Questions.
+
+Preserve readable line breaks in stored section text: bullets each start on their own `- ` line; paragraphs are separated by newline characters; never flatten bullets or paragraphs into one inline string.
 
 ## Optional Ideation
 
 Recommend one short ideation pass when context is thin, vague, generic, conflicted, or assumption-heavy. The user may decline.
 
-Do not pass `required_techniques` or fixed `techniques` to `ssd-brainstorming`. Let `ssd-brainstorming` select techniques.
+Do not pass `required_techniques` or fixed `techniques` to `ssd-brainstorming`; let it select techniques.
 
-Run at most one optional ideation pass unless the user explicitly asks for more.
+Run at most one optional ideation pass unless the user explicitly asks for more. Use brainstorm memory handoff output as source material, not markdown paths.
 
-## Inline Review Gate
+## Review And User Validation Gate
 
-Review the temp draft before finalization. Do not call product-brief review subagents.
+Review the section payload before presenting it. Do not call product-brief review subagents.
 
-The draft cannot be finalized while it has:
+Do not write while the payload has invented specificity, generic `why`/`problem`/`differentiation`, inference from vague answers, verbose thin-evidence prose, flattened formatting, missing audience or constraints without `Unknown`, source contradictions, or forbidden technical/PRD/MVP/roadmap/metrics/delivery/epic/story content.
 
-- invented unsupported specificity;
-- generic `why`, `problem`, or `differentiation`;
-- missing audience without `Unknown`;
-- missing constraints without `Unknown`;
-- unresolved contradiction with source material;
-- forbidden technical, architecture, implementation, PRD, MVP, roadmap, metrics, delivery, epics, or stories content.
+Also verify the solution connects to the problem, positioning is clear, assumptions are explicit, open questions are useful, and every section is grounded in allowed evidence or `Unknown`.
 
-Also check that the high-level solution connects to the problem, positioning is clear, assumptions are explicit, and open questions are useful rather than excessive.
+Ask the user only for strategic choices: audience ambiguity, conflicting positioning, contradictory constraints, major assumption inclusion/removal, or multiple viable product directions.
 
-Ask the user only when a finding requires a strategic choice: audience ambiguity, conflicting positioning, contradictory constraints, major assumption inclusion/removal, or multiple viable product directions.
+After internal fixes, create flows run the create-only advanced elicitation validation gate; edits skip it.
 
-## Final Distillation
+Present the reviewed payload in human-readable Markdown and ask for approval or section-level changes. Creation shows every section. Editing shows a concise change summary and changed sections only, preferably before/after bullets or equivalent deltas, plus affected assumptions, open questions, or sources and an optional offer to see the full final document.
 
-After writing `ssd_docs/1_product_brief.md`, call `ssd_distillator` exactly with:
+Approval prompt placement matters: show the complete create/edit review first, then put the approval/change instruction as the final paragraph. Discussion, clarification, or source selection is not approval.
+
+Do not output only raw JSON, memory command output, or a tool result as the user-facing review. If the user requests changes, revise and repeat this gate.
+
+## Memory Write
+
+After internal review and explicit user approval, write Product Brief memory through `.opencode/scripts/ssd_product_brief/memory.py`.
+
+Create command:
+
+```text
+python .opencode/scripts/ssd_product_brief/memory.py create
+```
+
+Update command:
+
+```text
+python .opencode/scripts/ssd_product_brief/memory.py update
+```
+
+Pass the JSON payload on stdin:
 
 ```json
 {
-  "source_documents": ["ssd_docs/1_product_brief.md"],
-  "downstream_consumer": "PRD creation",
-  "output_path": "._ssd_docs_distil/_docs/1_product_brief.md",
-  "audit": true,
-  "max_fix_passes": 2,
-  "fail_on_audit_findings": false
+  "change_summary": "brief explanation of why the brief changed",
+  "sections": {
+    "why-this-exists": "...",
+    "product-definition": "...",
+    "problem": "...",
+    "high-level-solution": "...",
+    "audience": "...",
+    "necessity-and-differentiation": "...",
+    "positioning": "...",
+    "practical-constraints": "...",
+    "assumptions": "...",
+    "open-questions": "..."
+  },
+  "cited_brainstorm_ids": [],
+  "cited_idea_ids": []
 }
 ```
 
-The caller provides the output path; the distillator must not guess.
+The adapter stores current `Artifact` and `ArtifactSection` memory with provenance relationships for cited brainstorms and ideas.
+
+Do not create Product Brief markdown or temp markdown drafts.

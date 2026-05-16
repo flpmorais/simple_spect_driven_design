@@ -25,7 +25,6 @@
 | bmad-deferred-run | Execute an approved deferred work plan and validate the result. | not-done |  |
 | bmad-deferred-triage | Normalize and triage deferred work items. | not-done |  |
 | bmad-dev-story | Execute story implementation from a context-filled story spec file. | not-done |  |
-| bmad-distillator | Compress source documents into lossless LLM-optimized distillates. | done |  |
 | bmad-document-project | Document brownfield projects for AI context. | not-done |  |
 | bmad-domain-research | Conduct domain and industry research. | not-done |  |
 | bmad-edit-prd | Edit an existing PRD. | not-done |  |

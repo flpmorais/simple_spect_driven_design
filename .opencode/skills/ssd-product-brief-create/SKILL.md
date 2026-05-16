@@ -1,13 +1,13 @@
 ---
 name: ssd-product-brief-create
-description: Create the first foundational product brief for a project through focused discovery, optional ideation, inline review, and mandatory SSD distillation.
+description: Create the first foundational product brief for a project through focused discovery, optional ideation, user validation, and SQLite memory storage.
 ---
 
 # ssd-product-brief-create
 
 Use when the user asks to create the first product brief, define a new product at a high level, or produce the foundational product definition for a project.
 
-This is OpenCode-native. Do not use BMad config, BMad step files, hidden workflow variables, project artifact scanning, or existing planning docs.
+OpenCode-native only. Do not use BMad config/steps, hidden workflow variables, artifact scanning, existing planning docs, or markdown product brief files.
 
 ## Contract
 
@@ -22,44 +22,85 @@ Input:
 
 Rules:
 
-- Read and apply `.opencode/shared/product-brief-contract.md` before proceeding.
+- Read and apply `.opencode/shared/product-brief-contract.md` first.
 - Always guided. Do not offer `headless`, `autonomous`, `yolo`, or `draft-first` modes.
 - If `product_or_problem_area` is missing, ask only: "What product, project, or problem area should we explore for the product brief?"
-- If `ssd_docs/1_product_brief.md` exists, stop. This skill creates only; editing belongs to `ssd-product-brief-edit`.
-- Write final `ssd_docs/1_product_brief.md` exactly once, after inline review.
+- Ask once near the start whether to include an existing stored memory object or file unless the request names one.
+- Source files are read directly. Stored memory objects are loaded through `.opencode/shared/recipes.md` plus the relevant recipe; do not inspect memory scripts unless the recipe is missing or fails.
+- Confirm selected source memory objects before drafting. If ambiguous, show concise candidates and ask the user to choose; never silently choose.
+- If `.opencode/scripts/ssd_product_brief/memory.py get` finds an existing Product Brief, stop and tell the user to use `ssd-product-brief-edit`.
+- Write Product Brief memory exactly once, after internal review and explicit approval, through `.opencode/scripts/ssd_product_brief/memory.py create`.
+- Do not create Product Brief markdown or temp markdown drafts.
 - Run at most one optional ideation pass unless the user explicitly asks for more.
 
-## Paths
+## Memory
 
 - Shared contract: `.opencode/shared/product-brief-contract.md`
-- Optional product brainstorm folder: `_docs/1_product_brief/product`
-- Optional product brainstorm distillate: `._ssd_docs_distil/brainstorming/_docs/1_product_brief/product/<filename>`
-- Product brief template: `.opencode/skills/ssd-product-brief-create/templates/product-brief-template.md`
-- Temp draft: `._ssd_docs_temp/_docs/1_product_brief.md`
-- Final brief: `ssd_docs/1_product_brief.md`
-- Final brief distillate: `._ssd_docs_distil/_docs/1_product_brief.md`
+- Memory adapter: `.opencode/scripts/ssd_product_brief/memory.py`
+- Artifact recipe index: `.opencode/shared/recipes.md`
+- Artifact kind: `product-brief`
+- Artifact ID: UUID returned by memory command
+- Optional product brainstorm memory: returned by `ssd-brainstorming` memory handoff
 
 ## Workflow
 
 ### 1. Frame
 
-Briefly state that this creates a foundational product definition and will avoid technical planning, PRD requirements, MVP scope, roadmap, success metrics, epics, stories, delivery planning, and implementation detail.
+State briefly that this creates a foundational product definition and excludes technical planning, PRD requirements, MVP scope, roadmap, success metrics, epics, stories, delivery planning, and implementation detail.
 
-### 2. Focused Discovery
+### 2. Preflight
 
-Use `initial_context` first. Gather only enough information to draft the required sections from the shared contract.
+Run:
 
-Do not run a questionnaire by default. Ask at most 3 focused questions only when the brief would otherwise be too speculative. If the user does not know, record `Unknown` or a named assumption and continue.
+```text
+python .opencode/scripts/ssd_product_brief/memory.py get
+```
 
-### 3. Optional Ideation
+If a Product Brief exists, stop and tell the user to use `ssd-product-brief-edit`. If missing, continue.
 
-Recommend a short ideation pass when the shared contract's optional ideation rule applies. The user may decline.
+### 3. Focused Discovery
+
+Use `initial_context` first. Gather only enough information to populate the shared contract's required sections.
+
+If no source was named, ask:
+
+```text
+Is there any existing stored memory object or file you want me to use as source material for this Product Brief?
+```
+
+Handle sources as defined in Contract rules. Confirm selected memory objects with:
+
+```text
+I found this source memory object:
+- <memory type>: <title/topic>
+- ID: <id>
+- Created: <created_at>
+- Status: <status>
+
+Use this as Product Brief source material?
+```
+
+Do not run a questionnaire by default. Ask at most 3 focused questions only when drafting would be speculative. If the user does not know, record `Unknown` or a named assumption and continue.
+
+Track evidence per required section. Vague fragments, broad labels, and yes/no answers are weak evidence unless they directly establish a product-level fact.
+
+### 4. Optional Ideation
+
+Recommend one short ideation pass when the shared contract says context is thin, vague, generic, conflicted, or assumption-heavy. The user may decline.
 
 Use this style:
 
 ```text
 The product direction is still thin. I recommend a short ideation pass before drafting so the brief has stronger problem, audience, and differentiation material. Do you want to run that now?
 ```
+
+Before starting a new Product Brief brainstorm, run:
+
+```text
+python .opencode/scripts/ssd_brainstorming/memory.py list
+```
+
+Resume exactly one unfinished matching brainstorm when `status` is `active` or `finished_at` is empty, `downstream_consumer=ssd-product-brief-create`, and topic/goal matches. If multiple match, show numbered candidates and ask the user to choose. Create a new brainstorm only when no match exists or the user explicitly starts over.
 
 If accepted, call `ssd-brainstorming` once with:
 
@@ -69,53 +110,113 @@ If accepted, call `ssd-brainstorming` once with:
   "topic": "<product_or_problem_area>",
   "initial_context": "<initial_context plus focused discovery notes>",
   "scope": "quick",
-  "target_folder": "_docs/1_product_brief/product",
   "downstream_consumer": "ssd-product-brief-create",
   "mode": "guided",
-  "goal": "Explore why this product should exist, who it is for, what problem makes it necessary, how it solves the problem at a high level, and what would make it meaningfully different or well-positioned.",
-  "constraints": "Apply .opencode/shared/product-brief-contract.md. Avoid implementation details, architecture, MVP scope, success metrics, delivery planning, epics, stories, and engineering tasks."
+  "goal": "Explore why this product should exist, who it is for, what problem makes it necessary, how it solves the problem at a high level, and what makes it meaningfully different or well-positioned.",
+  "constraints": "Apply .opencode/shared/product-brief-contract.md. Avoid implementation, architecture, MVP scope, success metrics, delivery planning, epics, stories, and engineering tasks. Return memory references, not markdown paths."
 }
 ```
 
-Use the returned brainstorm distillate as source material.
+Use returned brainstorm memory handoff and idea references as source material.
 
-### 4. Draft Temp Brief
+### 5. Draft Section Payload
 
-Draft `._ssd_docs_temp/_docs/1_product_brief.md` using the shared contract template path and required sections. Replace placeholders with source-backed content, preserve section order, and remove template guidance text.
+Draft a JSON-compatible Product Brief section payload in working context using the required section keys from the shared contract.
 
-Source material may include product/problem area, initial context, focused discovery notes, and the optional brainstorm distillate.
+Allowed sources: product/problem area, initial context, focused discovery, direct files, loaded artifacts, optional brainstorm memory, approved assumptions, or `Unknown`.
 
-### 5. Inline Review Gate
+Do not pad thin source material into polished prose. Unsupported or partial content becomes `Unknown`, `Assumption:`, or Open Questions.
 
-Apply the shared contract inline review gate.
+Core sections need direct support before approval review: `why-this-exists`, `product-definition`, `problem`, `high-level-solution`, and `audience`.
 
-If ideation has not been used and the draft is too generic after review, recommend the single optional ideation pass. If declined, proceed with explicit `Unknown` or `Assumption` markers where acceptable, or block only if the brief would be misleading.
+Preserve readable formatting in `canonical_text`: bullets each start on their own `- ` line; paragraphs are separated by newline characters; never flatten bullets or paragraphs into one inline string.
 
-### 6. Revise Temp Brief
+### 6. Internal Review Gate
 
-Apply clear review fixes directly to `._ssd_docs_temp/_docs/1_product_brief.md`.
+Apply the shared contract review rules before showing the payload.
 
-### 7. Finalize Once
+Run a grounding audit:
 
-Create `ssd_docs/1_product_brief.md` exactly once from the reviewed temp draft. If the final file appears before this write, stop.
+1. Identify explicit source facts for each required section.
+2. Replace unsupported content with `Unknown`.
+3. Move partial unsupported content to Open Questions or `Assumption:`.
+4. Block approval review if core sections are mostly inferred.
+5. Verify bullet and paragraph newlines are preserved.
 
-### 8. Distill Final
+If core sections remain generic, inferred, or unsupported, ask up to 3 focused evidence questions or recommend the optional ideation pass if not already offered. If declined or unanswered, keep uncertainty as `Unknown` or `Assumption:` and do not present it as complete.
 
-Run the shared contract final distillation call.
+### 7. Create Validation Gate
 
-### 9. Return Result
+Before approval, always run one internal `ssd-advanced-elicitation` pass using `Challenge from Critical Perspective`. This create-only gate stress-tests unsupported claims, shallow assumptions, overconfident positioning, missing operational constraints, hallucinated specificity, verbose thin-evidence prose, flattened formatting, and unsupported core sections.
+
+Use revision-ready output. Ask up to 3 validation questions, normally 3 for minimal-input drafts. Questions must target only the issues above and must not cover implementation, architecture, roadmap, metrics, detailed requirements, MVP scope, epics, stories, feature backlog, or general brainstorming.
+
+After answers, refine the section payload and rerun the grounding audit.
+
+Run one internal `Socratic Questioning` fallback only if blocking strategic gaps remain. Blocking gaps are unresolved choices that materially change audience, product-level problem, product definition, necessity versus existing tools/workflows, or the core operating constraint.
+
+Do not run Socratic fallback for implementation details, backlog items, nice-to-have details, future expansion, or fields that can safely be `Unknown`, an assumption, or an open question. If it runs, cap at 3 questions, ask only blocking strategic questions, refine once, then stop.
+
+Do not present the Product Brief for approval if validation still finds unsupported core sections that would make it misleading. Instead explain the blocker and offer more user-led discovery or storing an explicitly incomplete brief only if the user accepts the `Unknown` and `Assumption:` markers.
+
+### 8. User Section Validation Gate
+
+Present the complete proposed Product Brief in human-readable Markdown before writing memory. Include every required heading and proposed content, then show source memory objects, assumptions to store, open questions to keep, and validation summary.
+
+Approval prompt placement: never ask before showing the content. Put the approval/change instruction as the final paragraph.
+
+Use this style:
+
+```text
+Proposed Product Brief
+
+<all Product Brief sections>
+
+Source Memory Objects Used
+<sources or None>
+
+Assumptions That Will Be Stored
+<assumptions or None>
+
+Open Questions That Will Remain Unresolved
+<open questions or None>
+
+Validation Summary
+<create validation summary>
+
+Review complete. Reply with `approve` or `create it` to store this Product Brief, or tell me what to change by section.
+```
+
+Do not call `create` until the user explicitly approves after seeing the reviewed sections. Approval must be affirmative (`approved`, `create it`, `looks good`, or equivalent). Clarification, discussion, source selection, or answers to questions are not approval.
+
+Before `create`, recheck line breaks and rewrite flattened bullets such as `- first - second - third` as newline-separated bullets.
+
+### 9. Revise Section Payload
+
+If the user requests changes, apply clear fixes to the working section payload and repeat the User Section Validation Gate. If approved, finalize.
+
+### 10. Finalize Once
+
+After explicit approval, pass the approved payload on stdin:
+
+```text
+python .opencode/scripts/ssd_product_brief/memory.py create
+```
+
+Set `cited_brainstorm_ids` and `cited_idea_ids` when optional ideation or loaded brainstorm artifacts contributed source material.
+
+### 11. Return Result
 
 Return:
 
 ```json
 {
   "status": "complete|blocked|failed",
-  "product_brief_draft": "._ssd_docs_temp/_docs/1_product_brief.md",
-  "product_brief": "ssd_docs/1_product_brief.md",
-  "product_brief_distillate": "._ssd_docs_distil/_docs/1_product_brief.md",
+  "artifact_kind": "product-brief",
+  "artifact_id": "<uuid>",
   "ideation_used": "boolean",
-  "product_brainstorm_raw": "._ssd_docs_temp/brainstorming/_docs/1_product_brief/product/<filename> or null",
-  "product_brainstorm_distillate": "._ssd_docs_distil/brainstorming/_docs/1_product_brief/product/<filename> or null",
+  "cited_brainstorm_ids": [],
+  "cited_idea_ids": [],
   "warnings": []
 }
 ```
@@ -124,7 +225,11 @@ Return:
 
 - Do not scan project artifacts or existing docs.
 - Do not call `.agents/skills/bmad-product-brief`.
-- Do not overwrite or edit `ssd_docs/1_product_brief.md`.
-- Do not skip inline review or final distillation.
+- Do not create, edit, read, or depend on `ssd_docs/1_product_brief.md`.
+- Do not create temp Product Brief markdown.
+- Do not skip internal review.
+- Do not skip the create-only advanced elicitation validation gate.
+- Do not store inferred Product Brief section content as fact.
+- Do not write Product Brief memory before explicit user approval of proposed sections.
+- Do not output only JSON or a tool result as the user-facing review or final response.
 - Do not run more than one optional ideation pass unless the user explicitly asks.
-- Do not hand-write final distillates unless the caller explicitly asks for best-effort output after a distillator failure.

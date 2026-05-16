@@ -1,416 +1,562 @@
-# Product Blueprint Skill Plan
+# Architecture Blueprint Skill Plan
 
-Build a new OpenCode-native skill: `ssd-product-blueprint-create`.
+Build a new OpenCode-native skill: `ssd-architecture-blueprint-create`.
 
-It mirrors the structure of `ssd-product-brief-create`, but its artifact boundary is different: it expands the distilled Product Brief into the conceptual product shape, not requirements, architecture, MVP scope, roadmap, or delivery planning.
+The Architecture Blueprint is not "the architecture." It is a pre-analysis artifact that captures architectural intent before release planning.
+
+It answers:
+
+```text
+Given the product dream, what architectural shape seems necessary or desirable?
+```
+
+It works differently from Product Blueprint. Product Blueprint uses ideation to define the dream. Architecture Blueprint uses guided architectural decision coverage to map that dream into architectural intent.
 
 ## Artifacts To Add
 
 Create:
 
-- `.opencode/skills/ssd-product-blueprint-create/SKILL.md`
-- `.opencode/skills/ssd-product-blueprint-create/templates/product-blueprint-template.md`
-- `.opencode/agents/ssd_product_blueprint_coverage.md`
-- `.opencode/agents/ssd_product_blueprint_skeptic.md`
-- `docs/catalog/ssd-product-blueprint-create.md`
-- `docs/catalog/ssd_product_blueprint_coverage.md`
-- `docs/catalog/ssd_product_blueprint_skeptic.md`
+- `.opencode/skills/ssd-architecture-blueprint-create/SKILL.md`
+- `.opencode/skills/ssd-architecture-blueprint-create/templates/architecture-blueprint-template.md`
+- `.opencode/agents/ssd_architecture_blueprint_coverage.md`
+- `docs/skills/ssd-architecture-blueprint-create.md`
+- `docs/agents/ssd_architecture_blueprint_coverage.md`
 
 Update:
 
-- `docs/catalog.md`
+- `docs/index.md`
 
-## Product Blueprint Template
+## Source Inputs
 
-Use this base structure, with SSD frontmatter added:
+Required distillates:
+
+- Product Brief distillate: `._ssd_docs_distil/_docs/1_product_brief.md`
+- Product Blueprint distillate: `._ssd_docs_distil/_docs/2_product_blueprint.md`
+
+Optional input:
+
+- `initial_context`: additional user context or preferences.
+
+Do not read original source docs such as `ssd_docs/1_product_brief.md` or `ssd_docs/2_product_blueprint.md` during the skill flow. Use distillates only.
+
+## Outputs
+
+Final user-facing document:
+
+- `ssd_docs/3_architecture_blueprint.md`
+
+Internal temp draft:
+
+- `._ssd_docs_temp/_docs/3_architecture_blueprint.md`
+
+Internal final distillate:
+
+- `._ssd_docs_distil/_docs/3_architecture_blueprint.md`
+
+The final distillate is required but internal. Do not return it to the user in the success result.
+
+## Template
+
+Create `.opencode/skills/ssd-architecture-blueprint-create/templates/architecture-blueprint-template.md`:
 
 ```markdown
 ---
-docType: product-blueprint
+docType: architecture-blueprint
 status: draft
 sourceMaterial:
   - "{{product_brief_distillate}}"
-  - "{{product_shape_brainstorm_distillate}}"
-  - "{{product_integrity_brainstorm_distillate}}"
-createdBy: ssd-product-blueprint-create
+  - "{{product_blueprint_distillate}}"
+createdBy: ssd-architecture-blueprint-create
 ---
 
-# Product Blueprint
+# Architecture Blueprint
 
-## Product Definition
+## Architecture Intent
 
-Describe the product in plain language.
-Explain what the product is intended to be at a conceptual level.
+Describe the intended architectural direction and why it fits the product.
 
-## Product Boundaries
+## Architectural Principles
 
-Define what this product is and is not.
+List the principles that should guide architectural decisions.
 
-### In Scope
+- 
+- 
+- 
 
-### Out Of Scope
+## Major Architectural Concerns
 
-## Major Capabilities
+List the major concerns the architecture must account for.
 
-### <Capability Area>
+- Authentication
+- Authorization
+- Multi-tenancy
+- Data ownership
+- Integration
+- Observability
+- Scalability
+- Deployment
+- Cost control
 
-#### Purpose
+## Candidate System Components
 
-#### Capabilities
+List the likely major components of the system.
 
-## Product Principles
+| Component | Responsibility |
+|---|---|
+|  |  |
 
-List the principles that should guide product and technical decisions.
+## Key Data / Control Flows
 
-## Cross-Cutting Concerns
+Describe the most important high-level flows.
 
-List concerns that affect multiple capability areas.
+Example:
 
-## Assumptions
+- Document ingestion -> indexing -> retrieval -> AI response
+- User authentication -> tenant resolution -> permission evaluation
 
-List assumptions that materially shape the product.
+## Dependency Considerations
 
-## Major Unknowns
+Describe important architectural dependencies.
 
-List unresolved questions or uncertainties that may significantly affect the product.
+Example:
+
+- AI chat depends on retrieval
+- Retrieval depends on ingestion and indexing
+- Authorization affects all user-facing capabilities
+
+## Technology Direction
+
+Capture likely technology choices or constraints.
+
+This should be directional, not final.
+
+Example:
+
+- Prefer PostgreSQL for relational data
+- Prefer object storage for documents
+- Prefer vector/hybrid search for retrieval
+- Prefer modular service boundaries
+
+## Architectural Risks
+
+List major risks or unknowns.
+
+- 
+- 
+- 
+
+## Deferred Decisions
+
+List decisions that should not be finalized yet.
+
+- 
+- 
+- 
+
+## Planning Implications
+
+Summarize what this architecture blueprint implies for release planning.
+
+Example:
+
+- Release 1 should validate ingestion/search before advanced AI generation
+- Authentication should be designed for multiple providers even if only one provider is enabled first
+
+## ADR Candidates
+
+List architectural decisions that may need formal ADRs later.
+
+| Candidate Decision | Current Direction | Status | Why It May Need An ADR |
+|---|---|---|---|
+|  |  | directional / proposed / deferred |  |
 ```
 
 The generated blueprint removes guidance text and replaces placeholders with source-backed content.
+
+## Artifact Boundary
+
+The Architecture Blueprint may include:
+
+- Architectural intent.
+- Architectural principles.
+- Major architectural concerns.
+- Candidate system components.
+- High-level data/control flows.
+- Dependency considerations.
+- Directional technology choices or constraints.
+- Architectural risks.
+- Deferred decisions.
+- Planning implications for release planning.
+- ADR candidates.
+
+The Architecture Blueprint must not include:
+
+- Final architecture.
+- Detailed system design.
+- Final ADRs.
+- API specifications.
+- Database schemas.
+- Infrastructure manifests.
+- Deployment pipeline design.
+- Release plan.
+- Roadmap.
+- Work packages.
+- Engineering tasks.
+- User stories or acceptance criteria.
+
+Technology direction is allowed, but it must stay directional and reversible unless the user explicitly confirms a settled constraint.
+
+## ADR Policy
+
+ADRs are separate from the Architecture Blueprint.
+
+The Architecture Blueprint skill captures ADR candidates only. It does not create individual ADR files by default.
+
+Decision classifications:
+
+- `directional`: useful architectural direction, but not ADR-worthy yet.
+- `adr_candidate`: likely needs a formal ADR later.
+- `adr_now`: important and settled enough that a future ADR creation skill should prioritize it.
+- `deferred`: intentionally not decided yet.
+
+The Architecture Blueprint includes an `ADR Candidates` section so later ADR tooling can create separate ADR files.
+
+Future ADR paths should use:
+
+```text
+ssd_docs/adrs/index.md
+ssd_docs/adrs/0001-<short-title>.md
+```
+
+Do not create those ADR files in this skill unless the user explicitly asks for best-effort ADR generation.
 
 ## Skill Inputs
 
 ```json
 {
-  "product_brief_distillate": "optional, defaults to ._ssd_docs_distil/_docs/1_product_brief.md",
-  "initial_context": "optional additional user context"
+  "product_brief_distillate": "optional; default ._ssd_docs_distil/_docs/1_product_brief.md",
+  "product_blueprint_distillate": "optional; default ._ssd_docs_distil/_docs/2_product_blueprint.md",
+  "initial_context": "optional additional user context or architecture preferences"
 }
-```
-
-`product_brief_distillate` defaults to:
-
-```text
-._ssd_docs_distil/_docs/1_product_brief.md
 ```
 
 ## Hard Stops
 
-These are not `blocked` statuses. The skill simply stops before producing outputs.
+Return structured precondition results. Do not produce outputs when preconditions fail.
 
-Hard stop if:
+If Product Brief distillate is missing:
 
-- Product brief distillate does not exist.
-- Final blueprint already exists at `ssd_docs/2_product_blueprint.md`.
-
-Behavior:
-
-- No brainstorms.
-- No temp draft.
-- No final file.
-- No distillation.
-- No structured result object.
-
-Message examples:
-
-```text
-Product brief distillate is required before creating a Product Blueprint.
-Expected: ._ssd_docs_distil/_docs/1_product_brief.md
-Run the product brief creation flow first.
+```json
+{
+  "status": "precondition_failed",
+  "reason": "Product Brief distillate is required before creating an Architecture Blueprint.",
+  "expected": "._ssd_docs_distil/_docs/1_product_brief.md",
+  "required_action": "Run the product brief creation flow first."
+}
 ```
 
-```text
-Product Blueprint already exists at ssd_docs/2_product_blueprint.md.
-This create skill will not overwrite or edit it.
+If Product Blueprint distillate is missing:
+
+```json
+{
+  "status": "precondition_failed",
+  "reason": "Product Blueprint distillate is required before creating an Architecture Blueprint.",
+  "expected": "._ssd_docs_distil/_docs/2_product_blueprint.md",
+  "required_action": "Run the product blueprint creation flow first."
+}
 ```
 
-## Paths
+If final Architecture Blueprint already exists:
 
-- Product brief distillate: `._ssd_docs_distil/_docs/1_product_brief.md`
-- Product shape brainstorm folder: `_docs/2_product_blueprint/product_shape`
-- Product integrity brainstorm folder: `_docs/2_product_blueprint/product_integrity`
-- Product shape brainstorm raw: `._ssd_docs_temp/brainstorming/_docs/2_product_blueprint/product_shape/<filename>`
-- Product shape brainstorm distillate: `._ssd_docs_distil/brainstorming/_docs/2_product_blueprint/product_shape/<filename>`
-- Product integrity brainstorm raw: `._ssd_docs_temp/brainstorming/_docs/2_product_blueprint/product_integrity/<filename>`
-- Product integrity brainstorm distillate: `._ssd_docs_distil/brainstorming/_docs/2_product_blueprint/product_integrity/<filename>`
-- Template: `.opencode/skills/ssd-product-blueprint-create/templates/product-blueprint-template.md`
-- Temp draft: `._ssd_docs_temp/_docs/2_product_blueprint.md`
-- Final blueprint: `ssd_docs/2_product_blueprint.md`
-- Final blueprint distillate: `._ssd_docs_distil/_docs/2_product_blueprint.md`
-
-## Product Boundary
-
-The blueprint may include:
-
-- Product definition
-- Conceptual product boundaries
-- In-scope and out-of-scope product areas
-- Major capability areas
-- Purpose of each capability area
-- Conceptual capabilities
-- Product principles
-- Cross-cutting concerns
-- Assumptions
-- Major unknowns
-
-The blueprint must not include:
-
-- Requirements
-- User stories
-- Acceptance criteria
-- Architecture
-- Technology stack
-- Data models
-- API design
-- MVP scope
-- Roadmap
-- Delivery sequencing
-- Work packages
-- Engineering tasks
-- Success metrics unless already present as conceptual product concern and not used as planning criteria
+```json
+{
+  "status": "skipped",
+  "reason": "Architecture Blueprint already exists.",
+  "architecture_blueprint": "ssd_docs/3_architecture_blueprint.md"
+}
+```
 
 ## Workflow
 
 ### 1. Preflight
 
-- Check that `._ssd_docs_distil/_docs/1_product_brief.md` exists.
-- Check that `ssd_docs/2_product_blueprint.md` does not exist.
-- If either check fails, hard stop.
+Resolve input paths or defaults.
+
+Check that both prerequisite distillates exist:
+
+- `._ssd_docs_distil/_docs/1_product_brief.md`
+- `._ssd_docs_distil/_docs/2_product_blueprint.md`
+
+Check that final output does not exist:
+
+- `ssd_docs/3_architecture_blueprint.md`
+
+If any check fails, return the structured precondition/skipped result and stop.
 
 ### 2. Frame
 
-- State that this creates a conceptual Product Blueprint from the distilled Product Brief.
-- Explicitly state that it will avoid requirements, architecture, MVP, roadmap, and delivery planning.
+State that this creates a pre-analysis Architecture Blueprint.
 
-### 3. Product Shape Brainstorm
+It is not the final architecture. It captures architectural intent, recommended direction, major concerns, risks, deferred decisions, planning implications, and ADR candidates before release planning.
 
-Call `ssd-brainstorming` with:
+### 3. Read Source Distillates
 
-```json
-{
-  "run_mode": "internal",
-  "topic": "<product from brief>",
-  "initial_context": "<product brief distillate plus optional user context>",
-  "scope": "normal",
-  "target_folder": "_docs/2_product_blueprint/product_shape",
-  "downstream_consumer": "ssd-product-blueprint-create",
-  "mode": "guided",
-  "required_techniques": 3,
-  "techniques": [
-    {
-      "name": "Mind Mapping",
-      "purpose": "Branch from the product definition into major product areas, user-facing surfaces, supporting concepts, adjacent areas, and natural conceptual groupings."
-    },
-    {
-      "name": "Morphological Analysis",
-      "purpose": "Identify product dimensions such as actor types, information types, lifecycle stages, interaction modes, governance surfaces, and product states, then combine them to reveal missing or implicit capability areas."
-    },
-    {
-      "name": "Ecosystem Thinking",
-      "purpose": "Map the product's surrounding ecosystem of users, operators, affected parties, external dependencies, incentives, policies, and adjacent workflows without turning them into architecture."
-    }
-  ],
-  "goal": "Expand the product brief into the product's intended conceptual surface, boundaries, and major capability areas without defining requirements, architecture, MVP, roadmap, or delivery scope.",
-  "constraints": ["Apply Product Blueprint boundary."]
-}
-```
+Read both required distillates:
 
-Expected output feeds:
+- Product Brief distillate.
+- Product Blueprint distillate.
 
-- `Product Boundaries`
-- `In Scope`
-- `Out Of Scope`
-- `Major Capabilities`
-- Possible initial `Cross-Cutting Concerns`
+Use optional `initial_context` as additional source material.
 
-### 4. Product Integrity Brainstorm
+Do not scan project artifacts. Do not read original source docs.
 
-Read the product shape brainstorm distillate, then call `ssd-brainstorming` with:
+### 4. Build Architecture Coverage Checklist
+
+Create an internal checklist from both source distillates.
+
+Extract from Product Brief:
+
+- Product purpose.
+- Audience/users.
+- Differentiation.
+- Practical constraints.
+- Assumptions.
+- Open questions.
+
+Extract from Product Blueprint:
+
+- Product definition.
+- Boundaries.
+- In-scope and out-of-scope areas.
+- Major capabilities.
+- Capability purposes.
+- Product principles.
+- Cross-cutting concerns.
+- Assumptions.
+- Major unknowns.
+
+Internal checklist shape:
 
 ```json
 {
-  "run_mode": "internal",
-  "topic": "<product from brief>",
-  "initial_context": "<product brief distillate plus product shape brainstorm distillate plus optional user context>",
-  "scope": "normal",
-  "target_folder": "_docs/2_product_blueprint/product_integrity",
-  "downstream_consumer": "ssd-product-blueprint-create",
-  "mode": "guided",
-  "required_techniques": 3,
-  "techniques": [
-    {
-      "name": "First Principles Thinking",
-      "purpose": "Reduce the product to fundamental user and product truths, then derive principles that should guide future product and technical decisions."
-    },
-    {
-      "name": "Role Playing",
-      "purpose": "Inspect the proposed product shape from relevant stakeholder perspectives such as primary users, admins, operators, buyers, maintainers, skeptical adopters, and indirectly affected parties."
-    },
-    {
-      "name": "Question Storming",
-      "purpose": "Generate high-leverage unresolved questions that materially affect the product's conceptual structure but should not be answered prematurely as requirements or delivery plans."
-    }
-  ],
-  "goal": "Challenge and stabilize the product shape by identifying guiding principles, cross-cutting concerns, assumptions, unknowns, and conceptual tensions that later work must respect.",
-  "constraints": ["Apply Product Blueprint boundary."]
+  "product_drivers": [],
+  "capabilities_to_cover": [],
+  "cross_cutting_concerns": [],
+  "data_or_state_implications": [],
+  "user_and_access_implications": [],
+  "integration_implications": [],
+  "operational_implications": [],
+  "technology_direction_questions": [],
+  "risks_or_unknowns": [],
+  "planning_implications_to_resolve": []
 }
 ```
 
-Expected output feeds:
+This checklist is internal source material for guided decisions and coverage validation.
 
-- `Product Principles`
-- `Cross-Cutting Concerns`
-- `Assumptions`
-- `Major Unknowns`
-- Tensions between capability areas
+### 5. Guided Architect Decision Path
 
-### 5. Coverage Gate
+The skill acts as an architect and guides the user through decisions.
 
-Call new agent: `.opencode/agents/ssd_product_blueprint_coverage.md`.
+For each decision group:
+
+- Explain what the source material implies.
+- Present 2-4 viable options.
+- Always recommend one option first.
+- Give concise pros and cons.
+- Ask the user to accept, adjust, choose another option, or defer.
+- Record the selected direction and rationale.
+- Classify significant decisions as `directional`, `adr_candidate`, `adr_now`, or `deferred`.
+
+Decision groups:
+
+- Overall architectural shape.
+- Architectural principles.
+- Authentication and identity.
+- Authorization and permissions.
+- Tenancy and data ownership.
+- Core component boundaries.
+- Key data/control flows.
+- Integration strategy.
+- Observability and operations.
+- Scalability posture.
+- Deployment direction.
+- Cost-control posture.
+- Technology direction.
+- Architectural risks.
+- Deferred decisions.
+- Planning implications.
+- ADR candidates.
+
+The architect should not ask a generic questionnaire. Ask focused decision prompts derived from the coverage checklist.
+
+Prompt style:
+
+```text
+The Product Blueprint implies <architectural pressure>. I recommend <option> because <reason>.
+
+Options:
+1. <Recommended option> — Pros: <short>. Cons: <short>.
+2. <Alternative option> — Pros: <short>. Cons: <short>.
+3. <Alternative option> — Pros: <short>. Cons: <short>.
+
+Choose one, adjust the recommendation, or defer this decision.
+```
+
+### 6. Maintain Decision Notes
+
+Maintain internal decision notes while guiding the user:
+
+```json
+{
+  "accepted_recommendations": [],
+  "user_overrides": [],
+  "deferred_decisions": [],
+  "explicit_risks": [],
+  "adr_candidates": [],
+  "coverage_notes": []
+}
+```
+
+Decision notes are source material for the coverage subagent and final draft.
+
+### 7. Coverage Subagent Pass
+
+Call `.opencode/agents/ssd_architecture_blueprint_coverage.md`.
 
 Inputs:
 
-- Product brief distillate path
-- Product shape brainstorm distillate path
-- Product integrity brainstorm distillate path
-- Explicit user clarifications
-- Product Blueprint boundary
+- Product Brief distillate path.
+- Product Blueprint distillate path.
+- Internal architecture coverage checklist.
+- Guided decision notes.
+- Architecture Blueprint artifact boundary.
+
+The subagent checks whether every product driver, major capability, product concern, assumption, and major unknown has architectural treatment, an explicit deferred decision, or an explicit risk.
+
+It must not draft the document.
+
+It must not make architecture decisions.
+
+It must not read original source docs.
 
 Return contract:
 
 ```json
 {
-  "status": "sufficient|needs_clarification",
-  "missing_or_weak_sections": [],
+  "status": "sufficient|needs_more_decisions",
+  "missing_or_weak_items": [
+    {
+      "source_area": "product_driver|capability|concern|principle|assumption|unknown|constraint|planning_implication|adr_candidate",
+      "issue": "what is not covered, weak, contradictory, or over-decided",
+      "decision_needed": "specific decision or clarification needed"
+    }
+  ],
   "targeted_questions": [],
-  "risks": [],
   "warnings": []
 }
 ```
 
-Coverage checks:
+### 8. Coverage Loop
 
-- Product Definition is source-backed.
-- Boundaries are clear enough to distinguish product from adjacent areas.
-- In-scope areas are represented.
-- Out-of-scope areas are represented, or absence is explicitly handled.
-- Major capability areas are coherent and not just requirements.
-- Each major capability area has a purpose.
-- Product principles are meaningful and decision-guiding.
-- Cross-cutting concerns span multiple capabilities.
-- Assumptions materially shape the product.
-- Major unknowns are significant and not trivial.
-- The material avoids requirements, architecture, MVP, roadmap, and delivery planning.
+If coverage returns `needs_more_decisions`:
 
-### 6. Clarification Loop
+- Return to guided architect mode.
+- Cover only the missing or weak points.
+- Architect always recommends an option.
+- User can accept, adjust, choose another option, or defer.
+- Re-run coverage after meaningful new decisions.
 
-If coverage returns `needs_clarification`:
+Run at most 2 coverage loops.
 
-- Ask at most 3 targeted questions.
-- Prefer questions that unlock multiple weak sections.
-- Do not ask implementation, stack, MVP, roadmap, or delivery questions.
-- If the user does not know, record `Unknown`, an explicit assumption, or a major unknown.
-- Re-run coverage after meaningful clarification.
-- Avoid infinite looping; after reasonable clarification, proceed by exposing uncertainty in the blueprint.
+After that, unresolved items become explicit `Architectural Risks` or `Deferred Decisions`, unless the missing point would make the document misleading.
 
-### 7. Draft Temp Blueprint
+### 9. Draft Temp Architecture Blueprint
 
 Create:
 
 ```text
-._ssd_docs_temp/_docs/2_product_blueprint.md
+._ssd_docs_temp/_docs/3_architecture_blueprint.md
 ```
 
 Use the template exactly:
 
 ```text
-.opencode/skills/ssd-product-blueprint-create/templates/product-blueprint-template.md
+.opencode/skills/ssd-architecture-blueprint-create/templates/architecture-blueprint-template.md
 ```
 
 Rules:
 
 - Preserve section order and headings.
 - Remove guidance text.
-- Use only source-backed content from brief, brainstorm distillates, and user clarifications.
-- Use `Unknown` only when genuinely unknown.
-- Prefer explicit assumptions over invented facts.
-- Keep capability descriptions conceptual.
-- Do not drift into requirements or architecture.
+- Use only source-backed content from distillates, decision notes, coverage findings, and user decisions.
+- Keep architecture directional and pre-analysis.
+- Do not present tentative choices as final architecture.
+- Record uncertain items as risks or deferred decisions.
+- Include ADR candidates, but do not create ADR files.
 
-### 8. Skeptic Review
+### 10. Inline Final Review
 
-Call new agent: `.opencode/agents/ssd_product_blueprint_skeptic.md`.
+Review the temp draft inside the skill.
 
-Inputs:
+The temp draft cannot be finalized while it has:
 
-- Temp blueprint
-- Product brief distillate
-- Product shape brainstorm distillate
-- Product integrity brainstorm distillate
-- Clarification notes
-- Product Blueprint boundary
+- Final architecture claims.
+- Detailed system design.
+- Unsupported architectural decisions.
+- Missing coverage for major Product Blueprint capabilities.
+- Missing treatment for major concerns, unless marked not applicable or deferred.
+- Technology direction presented as final when it is only directional.
+- ADR candidates mixed into final ADR decisions.
+- Planning implications that become release plans, work packages, stories, or engineering tasks.
+- Contradictions with Product Brief or Product Blueprint distillates.
 
-Review checks:
+Apply clear, non-controversial fixes directly to the temp draft.
 
-- Unsupported claims
-- Vague or overlapping capability areas
-- Accidental requirements
-- Hidden architecture or implementation detail
-- MVP or roadmap leakage
-- Weak boundaries
-- Generic principles
-- Missing cross-cutting concerns
-- Assumptions presented as facts
-- Unknowns that are too low-level or not material
+Ask the user only for strategic architecture choices that cannot be safely deferred.
 
-The reviewer returns findings only. It must not rewrite the blueprint.
-
-### 9. Finalize Once
-
-Apply clear, non-controversial improvements to the temp draft only.
-
-Ask the user only if a review finding requires a strategic product choice.
+### 11. Finalize Once
 
 Before final write, re-check that:
 
 ```text
-ssd_docs/2_product_blueprint.md
+ssd_docs/3_architecture_blueprint.md
 ```
 
 does not exist.
 
-Then create it exactly once from the final temp draft.
+If it exists, return `skipped`.
 
-### 10. Distill Final Blueprint
+Otherwise create it exactly once from the reviewed temp draft.
 
-Call `ssd_distillator` with:
+### 12. Distill Final Blueprint
+
+Call `ssd_distillator` exactly with:
 
 ```json
 {
-  "source_documents": ["ssd_docs/2_product_blueprint.md"],
-  "downstream_consumer": "PRD creation, architectural analysis, MVP definition, roadmap creation, and work package decomposition",
-  "output_path": "._ssd_docs_distil/_docs/2_product_blueprint.md",
-  "audit": true,
-  "max_fix_passes": 2,
-  "fail_on_audit_findings": false
+  "source_documents": ["ssd_docs/3_architecture_blueprint.md"],
+  "downstream_consumer": "release planning, final architecture creation, PRD refinement, MVP definition, roadmap creation, and work package decomposition",
+  "output_path": "._ssd_docs_distil/_docs/3_architecture_blueprint.md",
+  "audit": false
 }
 ```
 
-### 11. Return Successful Result
+Final distillation is mandatory. Audit is disabled for this workflow, so audit fix passes are not used.
+
+### 13. Return Successful Result
 
 On success only:
 
 ```json
 {
   "status": "complete",
-  "product_blueprint_draft": "._ssd_docs_temp/_docs/2_product_blueprint.md",
-  "product_blueprint": "ssd_docs/2_product_blueprint.md",
-  "product_shape_brainstorm_raw": "._ssd_docs_temp/brainstorming/_docs/2_product_blueprint/product_shape/<filename>",
-  "product_shape_brainstorm_distillate": "._ssd_docs_distil/brainstorming/_docs/2_product_blueprint/product_shape/<filename>",
-  "product_integrity_brainstorm_raw": "._ssd_docs_temp/brainstorming/_docs/2_product_blueprint/product_integrity/<filename>",
-  "product_integrity_brainstorm_distillate": "._ssd_docs_distil/brainstorming/_docs/2_product_blueprint/product_integrity/<filename>",
-  "product_blueprint_distillate": "._ssd_docs_distil/_docs/2_product_blueprint.md",
+  "architecture_blueprint": "ssd_docs/3_architecture_blueprint.md",
   "warnings": []
 }
 ```
+
+Do not return the final distillate path. It is internal supporting context.
 
 ## Blocked Behavior
 
@@ -418,10 +564,7 @@ Only tool/runtime failures produce `blocked`.
 
 Examples:
 
-- `ssd-brainstorming` fails.
-- Expected brainstorm distillate is missing after a brainstorm run.
-- Coverage agent fails or returns invalid JSON.
-- Skeptic agent fails in a way the skill cannot safely ignore.
+- Coverage subagent fails or returns invalid JSON.
 - File write fails.
 - Final distillation fails.
 
@@ -430,75 +573,86 @@ Return:
 ```json
 {
   "status": "blocked",
-  "reason": "<specific failure>",
-  "failed_step": "<step name>",
+  "reason": "specific failure",
+  "failed_step": "step name",
   "partial_outputs": {
-    "product_shape_brainstorm_raw": "... or null",
-    "product_shape_brainstorm_distillate": "... or null",
-    "product_integrity_brainstorm_raw": "... or null",
-    "product_integrity_brainstorm_distillate": "... or null",
-    "product_blueprint_draft": "... or null",
-    "product_blueprint": "... or null",
-    "product_blueprint_distillate": "... or null"
+    "coverage_checklist": "created or null",
+    "decision_notes": "created or null",
+    "architecture_blueprint_draft": "path or null",
+    "architecture_blueprint": "path or null"
   },
   "required_action": "Resolve the failed tool run and retry the skill.",
   "warnings": []
 }
 ```
 
-## Challenge To The Plan
+## Coverage Agent Plan
 
-### Risk 1: Two `normal` brainstorms may overproduce material.
+Create `.opencode/agents/ssd_architecture_blueprint_coverage.md`.
 
-Why it matters: A Product Blueprint should remain conceptual, not become a pseudo-PRD.
+Agent purpose:
 
-Mitigation: The skill must repeatedly enforce the Product Blueprint boundary and tell brainstorming to stop when enough section coverage exists, not chase exhaustive decomposition.
+```text
+Checks whether Architecture Blueprint decision notes cover the Product Brief and Product Blueprint source material before drafting.
+```
 
-### Risk 2: `Major Capabilities` can easily become requirements.
+Agent boundary:
 
-Why it matters: Capability lists may drift into specific workflows, acceptance criteria, or implementation behavior.
+- Read only explicit inputs.
+- Do not read original source docs.
+- Do not draft or rewrite the Architecture Blueprint.
+- Do not make architecture decisions.
+- Return only JSON coverage findings.
 
-Mitigation: The template should describe capabilities as conceptual product abilities, not `the system shall` statements. The skeptic agent should explicitly flag requirements language.
+Coverage standard:
 
-### Risk 3: `Product Principles` can become generic filler.
+- Every major product capability has architectural treatment.
+- Every major Product Blueprint cross-cutting concern is addressed, marked not applicable, deferred, or risk-recorded.
+- User/access implications are covered where relevant.
+- Data/state implications are covered where relevant.
+- Integration implications are covered where relevant.
+- Operational implications are covered where relevant.
+- Technology direction questions are addressed directionally or deferred.
+- Major unknowns become architectural risks or deferred decisions.
+- Planning implications follow from architecture decisions without becoming a release plan.
+- Significant decisions are classified for ADR handling.
 
-Why it matters: Principles like `simple`, `scalable`, or `user-friendly` are weak unless they guide tradeoffs.
+## Catalog Updates
 
-Mitigation: Coverage should require principles to be decision-guiding. Example: `Prefer explainable workflows over hidden automation when user trust is at stake.`
+Add to `docs/index.md`:
 
-### Risk 4: `Cross-Cutting Concerns` may become architecture concerns.
+```markdown
+| skill | [ssd-architecture-blueprint-create](skills/ssd-architecture-blueprint-create.md) | Creates a pre-analysis Architecture Blueprint from the Product Brief and Product Blueprint through guided architecture decisions, coverage validation, ADR candidate capture, and mandatory SSD distillation. |
+| agent | [ssd_architecture_blueprint_coverage](agents/ssd_architecture_blueprint_coverage.md) | Checks whether guided Architecture Blueprint decisions cover Product Brief and Product Blueprint source material before drafting. |
+```
 
-Why it matters: Security, privacy, governance, data quality, and reliability can be product concerns, but they can also trigger premature technical design.
+Create `docs/skills/ssd-architecture-blueprint-create.md` summarizing:
 
-Mitigation: The skill should allow product-level concerns but forbid solution mechanisms.
+- Purpose.
+- Inputs.
+- Outputs.
+- Workflow.
+- Paths.
+- Completion criteria.
+- Related files.
 
-### Risk 5: The coverage loop could become annoying.
+Create `docs/agents/ssd_architecture_blueprint_coverage.md` summarizing:
 
-Why it matters: Asking repeated questions can slow the workflow and duplicate what brainstorming already surfaced.
+- Purpose.
+- Inputs.
+- Return contract.
+- Boundary.
+- Invocation guidance.
 
-Mitigation: Ask at most 3 questions per pass, prioritize high-leverage gaps, and proceed with assumptions/unknowns when the user cannot answer.
+## Success Criteria
 
-### Risk 6: A separate `coverage` agent and `skeptic` agent add complexity.
-
-Why it matters: This is more machinery than a minimal skill.
-
-Decision: Use the skeptic agent. Blueprint drift into requirements and architecture is likely enough to justify the extra review gate.
-
-### Risk 7: Hard stop with no structured status is less machine-friendly.
-
-Why it matters: Later automation might prefer a structured `skipped` or `precondition_failed` result.
-
-Why it matches the intended behavior: Missing prerequisite and existing final file should produce no outputs and no status. The skill docs should make this intentional so future agents do not convert it into a structured result.
-
-### Risk 8: The final distillate consumer is broad.
-
-Why it matters: A distillate aimed at PRD, architecture, MVP, roadmap, and work packages may become too general.
-
-Mitigation: The distillator should preserve the blueprint's conceptual structure and explicitly mark downstream relevance without adding downstream decisions.
-
-## Recommendation
-
-Proceed with the plan as written, with these decisions:
-
-- Make the coverage agent status only `sufficient|needs_clarification`.
-- Include the skeptic agent in v1.
+- Skill exists and describes the guided architect workflow.
+- Template exists with the requested sections plus `ADR Candidates`.
+- Coverage subagent exists and returns only JSON.
+- Catalog includes skill and agent.
+- Skill requires both Product Brief and Product Blueprint distillates.
+- Skill does not use brainstorming.
+- Skill does not create ADR files by default.
+- Skill captures ADR candidates in the Architecture Blueprint.
+- Final distillation is mandatory with `audit: false`.
+- Success result returns only `architecture_blueprint` and user-facing metadata.

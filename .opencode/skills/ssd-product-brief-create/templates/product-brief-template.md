@@ -10,40 +10,40 @@ createdBy: ssd-product-brief-create
 
 ## Why This Exists
 
-Explain why this product should exist now. Focus on the problem pressure, unmet need, or opportunity. Avoid implementation, metrics, and delivery planning.
+Why this should exist now; no implementation, metrics, or delivery planning.
 
 ## Product Definition
 
-Define what is being built in plain language for a non-expert reader.
+What is being built, in plain language.
 
 ## Problem
 
-Describe the specific problem, pain, or gap. Avoid generic market language.
+The specific problem, pain, or gap; avoid generic market language.
 
 ## High-Level Solution
 
-Explain how the product addresses the problem at a conceptual level. Do not describe architecture, stack, workflows in detail, or requirements.
+Conceptual solution only; no architecture, stack, detailed workflows, or requirements.
 
 ## Audience
 
-Describe who the product is for and why they care.
+Who it is for and why they care.
 
 ## Necessity And Differentiation
 
-Explain why this is needed compared with doing nothing, current behavior, or obvious alternatives.
+Why it is needed versus doing nothing, current behavior, or obvious alternatives.
 
 ## Positioning
 
-Describe how the product should be understood by its audience.
+How the audience should understand the product.
 
 ## Practical Constraints
 
-List known time, budget, team, operational, commercial, or organizational constraints. If unknown, say so explicitly.
+Known time, budget, team, operational, commercial, or organizational constraints; say `Unknown` if unknown.
 
 ## Assumptions
 
-List meaningful assumptions that shape the product definition.
+Meaningful assumptions shaping the product definition.
 
 ## Open Questions
 
-List only unresolved questions that materially affect product definition.
+Unresolved questions that materially affect product definition.

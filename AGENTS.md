@@ -4,6 +4,9 @@ We are building a set of open code native agents and skills loosely based in bma
 # RTK
 rtk filters and compresses command outputs before they reach LLM context
 
+# Git
+Use SSH remotes for GitHub operations. HTTPS push cannot authenticate non-interactively here.
+
 # Roadmap
 Current phase: prototype
 ## Prototype
@@ -14,15 +17,30 @@ Current phase: prototype
 # Inventory
 Everytime you update or u
 
+# Documentation
+## General docs
+read only if editing core functionalities of these systems
+- wiki -> docs/wiki
+- memory -> docs/memory
+## How to
+read if adding surfaces to these systems
+- wiki -> docs/howto/wiki.md
+- memory -> docs/howto/memory.md
+
+## Specific docs
+Docs are type-based and name-matched:
+- skill `x` -> `docs/skills/x.md`
+- agent `x` -> `docs/agents/x.md`
+- command `x` -> `docs/commands/x.md`
+- memory for unit `x` -> `docs/memory/x.md`
+- templates -> `docs/templates/`
+
 # Reference Files
 DO NOT create or edit those files.
-Load these files only if needed.
-## BMAD root folder
-* _bmad/
-## BMAD output samples
-* _bmad-output/
-## BMAD skills and agents
-* .agents/skills
+Load these files only if needed. 
+- BMAD root folder -> _bmad/
+- BMAD output samples -> _bmad-output/
+- BMAD skills and agents -> .agents/skills
 
 # Behavioral guidelines 
 ## 1. Think Before Coding

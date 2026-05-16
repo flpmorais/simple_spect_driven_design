@@ -1,13 +1,13 @@
 ---
 name: ssd-product-brief-edit
-description: Edit an existing Product Brief, preserve the shared product-brief contract, regenerate its distillate, and warn about stale downstream artifacts.
+description: Edit an existing SQLite-backed Product Brief while preserving the shared product-brief contract.
 ---
 
 # ssd-product-brief-edit
 
-Use when the user asks to revise, update, correct, or pivot an existing `ssd_docs/1_product_brief.md`.
+Use when the user asks to revise, update, correct, or pivot an existing Product Brief.
 
-This is OpenCode-native. Do not use BMad config, BMad step files, hidden workflow variables, project artifact scanning beyond named SSD artifacts, or existing planning docs except the Product Brief and downstream staleness checks.
+OpenCode-native only. Do not use BMad config/steps, hidden workflow variables, artifact scanning, existing planning docs, downstream artifact checks, or markdown product brief files.
 
 ## Contract
 
@@ -22,55 +22,53 @@ Input:
 
 Rules:
 
-- Read and apply `.opencode/shared/product-brief-contract.md` before proceeding.
+- Read and apply `.opencode/shared/product-brief-contract.md` first.
 - If `change_request` is missing, ask only: "What change should we make to the Product Brief?"
-- If `ssd_docs/1_product_brief.md` is missing, stop and tell the user to run `ssd-product-brief-create` first.
-- This skill may overwrite `ssd_docs/1_product_brief.md` after inline review.
-- Regenerate `._ssd_docs_distil/_docs/1_product_brief.md` after every successful edit.
+- If `.opencode/scripts/ssd_product_brief/memory.py get` reports no Product Brief, stop and tell the user to run `ssd-product-brief-create` first.
+- Update Product Brief memory only after inline review and explicit approval, through `.opencode/scripts/ssd_product_brief/memory.py update`.
+- Do not run the create validation gate; mandatory `Challenge from Critical Perspective` belongs only to `ssd-product-brief-create`.
+- Do not create Product Brief markdown or temp markdown drafts.
 - Run at most one optional ideation pass unless the user explicitly asks for more.
 
-## Paths
+## Memory
 
 - Shared contract: `.opencode/shared/product-brief-contract.md`
-- Existing/final brief: `ssd_docs/1_product_brief.md`
-- Existing/final brief distillate: `._ssd_docs_distil/_docs/1_product_brief.md`
-- Temp edit draft: `._ssd_docs_temp/_docs/1_product_brief_edit.md`
-- Optional edit brainstorm folder: `_docs/1_product_brief/edit`
-- Optional edit brainstorm distillate: `._ssd_docs_distil/brainstorming/_docs/1_product_brief/edit/<filename>`
-- Downstream artifacts to warn about: `ssd_docs/2_product_blueprint.md`, `._ssd_docs_distil/_docs/2_product_blueprint.md`
+- Memory adapter: `.opencode/scripts/ssd_product_brief/memory.py`
+- Artifact kind: `product-brief`
+- Artifact ID: UUID returned by memory command
+- Optional edit brainstorm memory: returned by `ssd-brainstorming` memory handoff
 
 ## Workflow
 
 ### 1. Preflight
 
-Read and apply `.opencode/shared/product-brief-contract.md`.
+Read the shared contract and run:
 
-If `ssd_docs/1_product_brief.md` is missing, stop with:
+```text
+python .opencode/scripts/ssd_product_brief/memory.py get
+```
+
+If missing, stop with:
 
 ```text
 Product Brief is required before editing.
-Expected: ssd_docs/1_product_brief.md
+Expected memory: Product Brief artifact with kind `product-brief`
 Run ssd-product-brief-create first.
 ```
 
-Read `ssd_docs/1_product_brief.md`. Optionally read `._ssd_docs_distil/_docs/1_product_brief.md` if it exists.
+Use returned artifact and current sections as the edit base.
 
 ### 2. Classify Change
 
-Classify the requested change as one of:
-
-- minor wording cleanup;
-- section update;
-- positioning or audience change;
-- major product pivot.
+Classify as one of: minor wording cleanup, section update, positioning or audience change, or major product pivot.
 
 ### 3. Clarify
 
-Ask at most 3 questions only if the edit creates ambiguity, contradiction, or a strategic choice. If the user does not know, record `Unknown` or a named assumption and continue when safe.
+Ask at most 3 questions only for ambiguity, contradiction, or strategic choice. If the user does not know, record `Unknown` or a named assumption and continue when safe.
 
 ### 4. Optional Ideation
 
-Recommend a short ideation pass only for major pivots, unclear audience, weak positioning, or changed problem framing. The user may decline.
+Recommend one short ideation pass only for major pivots, unclear audience, weak positioning, or changed problem framing. The user may decline.
 
 If accepted, call `ssd-brainstorming` once with:
 
@@ -78,77 +76,99 @@ If accepted, call `ssd-brainstorming` once with:
 {
   "run_mode": "internal",
   "topic": "<product_or_problem_area from existing brief or change request>",
-  "initial_context": "<existing brief plus change request plus clarifications>",
+  "initial_context": "<existing Product Brief memory plus change request plus clarifications>",
   "scope": "quick",
-  "target_folder": "_docs/1_product_brief/edit",
   "downstream_consumer": "ssd-product-brief-edit",
   "mode": "guided",
-  "goal": "Explore the requested product brief change at a product-definition level, including why it matters, audience impact, positioning, assumptions, and contradictions with the current brief.",
-  "constraints": "Apply .opencode/shared/product-brief-contract.md. Avoid implementation details, architecture, MVP scope, success metrics, delivery planning, epics, stories, and engineering tasks."
+  "goal": "Explore the requested brief change at product-definition level: why it matters, audience impact, positioning, assumptions, and contradictions with the current brief.",
+  "constraints": "Apply .opencode/shared/product-brief-contract.md. Avoid implementation, architecture, MVP scope, success metrics, delivery planning, epics, stories, and engineering tasks. Return memory references, not markdown paths."
 }
 ```
 
-Use the returned brainstorm distillate as edit source material.
+Use returned brainstorm memory handoff and idea references as edit source material.
 
-### 5. Draft Edited Temp Brief
+### 5. Draft Edited Section Payload
 
-Create `._ssd_docs_temp/_docs/1_product_brief_edit.md` using the current brief as the base.
+Create an edited Product Brief section payload in working context from current memory sections.
 
-Apply only:
+Apply only requested changes, required consistency fixes, and source-backed additions from clarification or optional ideation.
 
-- requested changes;
-- required consistency fixes;
-- source-backed additions from clarification or optional ideation.
-
-Preserve the current brief structure. Use the shared contract template path only to repair missing required sections or malformed structure.
+Preserve all required section keys. Preserve readable `canonical_text`: bullets each start on their own `- ` line; paragraphs are newline-separated; never flatten bullets or paragraphs into one inline string.
 
 ### 6. Inline Review Gate
 
-Apply the shared contract inline review gate to the temp edit draft.
+Apply the shared contract inline review gate to the edited payload.
 
-If ideation has not been used and the edit remains too generic, conflicted, or assumption-heavy after review, recommend the single optional ideation pass. If declined, proceed with explicit `Unknown` or `Assumption` markers where acceptable, or block only if the edited brief would be misleading.
+Validate the change, not the full document:
+
+- Compare current memory sections with the edited payload.
+- Show a concise change summary and only changed sections.
+- For each changed section, show before/after bullets or an equivalent Markdown delta.
+- Include only affected sources, assumptions, and open questions.
+- Do not display unchanged sections unless the user asks.
+- Offer: "Do you want to see the full final document or any specific section before approval?"
+- Verify changed sections preserve newline-separated bullets and paragraphs before asking for approval.
+
+Render the complete focused change review first, then put approval/change instruction as the final paragraph:
+
+```text
+Product Brief Change Review
+
+Change Summary
+<concise summary>
+
+Changed Sections
+<before/after bullets or focused deltas>
+
+Affected Assumptions, Open Questions, And Sources
+<affected items or None>
+
+Optional Full Review
+If you want, ask to see the full final document or any specific section before approval.
+
+Review complete. Reply with `approve` or `update it` to update the Product Brief, or tell me what to change by section.
+```
+
+Do not run `update` until explicit approval after the focused review. If the edit remains generic, conflicted, or assumption-heavy, recommend the single optional ideation pass if not already used; if declined, use `Unknown` or `Assumption:` where safe, or block if misleading.
 
 ### 7. Apply Edit
 
-Overwrite `ssd_docs/1_product_brief.md` with the reviewed temp edit draft.
+Pass the reviewed payload on stdin:
 
-### 8. Redistill
+```text
+python .opencode/scripts/ssd_product_brief/memory.py update
+```
 
-Run the shared contract final distillation call.
+Set `cited_brainstorm_ids` and `cited_idea_ids` when optional ideation contributed source material. If omitted, the adapter preserves existing current provenance.
 
-### 9. Downstream Staleness Warning
+If update fails because memory is missing, rerun preflight and stop if the Product Brief no longer exists.
 
-Check whether either downstream artifact exists:
+Before `update`, recheck line breaks and rewrite flattened bullets such as `- first - second - third` as newline-separated bullets.
 
-- `ssd_docs/2_product_blueprint.md`
-- `._ssd_docs_distil/_docs/2_product_blueprint.md`
-
-If found, include those paths in `stale_downstream_artifacts`. Do not edit downstream artifacts automatically.
-
-### 10. Return Result
+### 8. Return Result
 
 Return:
 
 ```json
 {
   "status": "complete|blocked|failed",
-  "product_brief_edit_draft": "._ssd_docs_temp/_docs/1_product_brief_edit.md",
-  "product_brief": "ssd_docs/1_product_brief.md",
-  "product_brief_distillate": "._ssd_docs_distil/_docs/1_product_brief.md",
+  "artifact_kind": "product-brief",
+  "artifact_id": "<uuid>",
   "ideation_used": "boolean",
-  "edit_brainstorm_raw": "._ssd_docs_temp/brainstorming/_docs/1_product_brief/edit/<filename> or null",
-  "edit_brainstorm_distillate": "._ssd_docs_distil/brainstorming/_docs/1_product_brief/edit/<filename> or null",
-  "stale_downstream_artifacts": [],
+  "cited_brainstorm_ids": [],
+  "cited_idea_ids": [],
   "warnings": []
 }
 ```
 
 ## Hard Stops
 
-- Do not proceed if `ssd_docs/1_product_brief.md` is missing.
+- Do not proceed if Product Brief memory is missing.
 - Do not call BMad skills.
-- Do not scan project artifacts beyond named SSD artifacts in this workflow.
-- Do not skip inline review or final distillation.
+- Do not scan project artifacts.
+- Do not create, edit, read, or depend on `ssd_docs/1_product_brief.md`.
+- Do not create temp Product Brief markdown.
+- Do not skip inline review.
+- Do not run the Product Brief create validation gate.
 - Do not run more than one optional ideation pass unless the user explicitly asks.
-- Do not edit downstream artifacts automatically.
-- Do not hand-write final distillates unless the caller explicitly asks for best-effort output after a distillator failure.
+- Do not edit or warn about downstream artifacts automatically.
