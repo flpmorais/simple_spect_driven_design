@@ -29,10 +29,13 @@ KIND = "product-brief"
 TITLE = "Product Brief"
 REQUIRED_SECTIONS = [
     ("why-this-exists", "Why This Exists"),
+    ("product-classification", "Product Classification"),
     ("product-definition", "Product Definition"),
     ("problem", "Problem"),
     ("high-level-solution", "High-Level Solution"),
     ("audience", "Audience"),
+    ("budget", "Budget"),
+    ("team", "Team"),
     ("necessity-and-differentiation", "Necessity And Differentiation"),
     ("positioning", "Positioning"),
     ("practical-constraints", "Practical Constraints"),

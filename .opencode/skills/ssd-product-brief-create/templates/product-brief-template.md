@@ -12,6 +12,10 @@ createdBy: ssd-product-brief-create
 
 Why this should exist now; no implementation, metrics, or delivery planning.
 
+## Product Classification
+
+Primary classification from the `product-classifications` SQLite reference list; optional secondary classification; include rationale and uncertainty.
+
 ## Product Definition
 
 What is being built, in plain language.
@@ -27,6 +31,14 @@ Conceptual solution only; no architecture, stack, detailed workflows, or require
 ## Audience
 
 Who it is for and why they care.
+
+## Budget
+
+Direct user input only; say `Unknown` if unknown.
+
+## Team
+
+Direct user input only; say `Unknown` if unknown.
 
 ## Necessity And Differentiation
 

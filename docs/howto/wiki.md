@@ -31,6 +31,7 @@ Use existing route classes when possible:
 
 ```text
 artifact current state      -> /artifacts/:kind
+reference list              -> /lists/:listKey
 generic node/entity         -> /nodes/:id
 entity collection           -> existing index if group already exists
 ```
@@ -120,6 +121,26 @@ If memory adds a non-artifact entity label:
 - generic `/nodes/:id` should display it without custom work;
 - add navigation grouping only if users need to browse the label as a collection;
 - add index/detail routes only if generic node browsing is not enough.
+
+### Reference Lists
+
+If memory adds `ReferenceList` and `ReferenceItem` nodes:
+
+```text
+ReferenceList collection -> /lists
+ReferenceList detail     -> /lists/:listKey
+ReferenceItem detail     -> /nodes/:id
+```
+
+Required wiki changes:
+
+- add or update a server-only reference list graph adapter;
+- add `ReferenceListSummary`, `ReferenceItemSummary`, and `ReferenceListDetailView` view models;
+- include `Lists` in primary navigation;
+- include a graph-derived `Lists` navigation section;
+- keep item detail browsing on `/nodes/:id` unless a separate item route is explicitly needed.
+
+Do not add `/lists/:listKey/:itemKey` by default. Use the generic node page for item inspection.
 
 ### Changed Memory Contract
 

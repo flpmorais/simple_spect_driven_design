@@ -10,10 +10,13 @@ from .conftest import assert_uuid, stdout_json, write_json
 def sections(**overrides):
     data = {
         "why-this-exists": "Teams need a clearer reason for this product to exist.",
+        "product-classification": "Primary: Startup MVP\nSecondary: Knowledge Work Augmentation Tool\n\nRationale:\nSmall teams need early planning support.\n\nUncertainty:\nNone",
         "product-definition": "A product definition assistant for early planning.",
         "problem": "Planning jumps to implementation before product intent is clear.",
         "high-level-solution": "Guide the user through a concise product brief.",
         "audience": "Product-minded builders and small teams.",
+        "budget": "Unknown",
+        "team": "Unknown",
         "necessity-and-differentiation": "It keeps product definition separate from delivery planning.",
         "positioning": "Positioned as an early product clarity workflow.",
         "practical-constraints": "Must avoid implementation detail.",
@@ -155,7 +158,7 @@ def test_update_replaces_current_state_and_preserves_provenance(product_brief_me
         edges = graph.get_edges_from(created["artifact_id"])
         assert any(edge["target"] == "brainstorm-1" and edge["r"]["type"] == "DERIVED_FROM" for edge in edges)
         assert any(edge["target"] == "idea-1" and edge["r"]["type"] == "CITES" for edge in edges)
-        assert len(graph.query("MATCH (n) RETURN n")) == 13
+        assert len(graph.query("MATCH (n) RETURN n")) == 16
     finally:
         graph.close()
 
@@ -190,7 +193,7 @@ def test_delete_product_brief_removes_artifact_children_and_relationships(
         "deleted": {
             "artifact_id": artifact_id,
             "artifact_kind": "product-brief",
-            "nodes": 11,
+            "nodes": 14,
         },
     }
 

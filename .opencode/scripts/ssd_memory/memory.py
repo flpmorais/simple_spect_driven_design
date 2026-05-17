@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # /// script
 # /// requires-python = ">=3.10"
-# /// dependencies = ["graphqlite"]
+# /// dependencies = ["graphqlite", "pyyaml"]
 # ///
 """Generic SSD memory semantic command interface backed by GraphQLite."""
 
@@ -12,6 +12,8 @@ import json
 import sys
 from pathlib import Path
 from typing import Any
+
+import yaml
 
 SCRIPT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPT_ROOT))
@@ -28,6 +30,9 @@ from ssd_memory.kernel import (  # noqa: E402
     read_json_file,
     slug,
 )
+
+
+REFERENCE_DATA_DIR = Path(".opencode/shared/reference-data")
 
 
 def get_artifact_by_kind(graph: Any, kind: str) -> dict[str, Any] | None:
@@ -91,6 +96,151 @@ def current_sections(graph: Any, kind: str) -> list[dict[str, Any]]:
         if props:
             sections.append(props)
     return sorted(sections, key=lambda item: item.get("position", 0))
+
+
+def read_yaml_file(path_text: str) -> dict[str, Any]:
+    path = Path(path_text)
+    if not path.is_file():
+        raise ValueError(f"Expected YAML file: {path_text}")
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError("reference seed must be a YAML object")
+    return data
+
+
+def default_reference_seed_path(list_key: str) -> Path:
+    return REFERENCE_DATA_DIR / f"{slug(list_key)}.yaml"
+
+
+def get_reference_list(graph: Any, list_key: str) -> dict[str, Any] | None:
+    normalized_key = slug(list_key)
+    rows = graph.query("MATCH (l:ReferenceList) RETURN l")
+    matches: list[dict[str, Any]] = []
+    for row in rows:
+        props = row["l"].get("properties", {})
+        if props.get("list_key") == normalized_key:
+            matches.append(props)
+    if len(matches) > 1:
+        raise ValueError(f"Multiple ReferenceLists exist for list_key: {normalized_key}")
+    return matches[0] if matches else None
+
+
+def reference_items(graph: Any, list_id: str) -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
+    for edge in graph.get_edges_from(list_id):
+        if edge.get("r", {}).get("type") != "HAS_ITEM":
+            continue
+        props = node_props(graph.get_node(edge["target"]))
+        if props:
+            items.append(props)
+    return sorted(items, key=lambda item: item.get("position", 0))
+
+
+def validate_reference_seed(raw: dict[str, Any]) -> dict[str, Any]:
+    list_key = raw.get("list_key")
+    title = raw.get("title")
+    items = raw.get("items")
+    if not isinstance(list_key, str) or not list_key.strip():
+        raise ValueError("reference seed requires list_key")
+    if not isinstance(title, str) or not title.strip():
+        raise ValueError("reference seed requires title")
+    if not isinstance(items, list) or not items:
+        raise ValueError("reference seed requires non-empty items")
+
+    normalized_items: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for index, item in enumerate(items, start=1):
+        if not isinstance(item, dict):
+            raise ValueError(f"Reference item #{index} must be an object")
+        item_key = item.get("item_key")
+        name = item.get("name")
+        if not isinstance(item_key, str) or not item_key.strip():
+            raise ValueError(f"Reference item #{index} requires item_key")
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError(f"Reference item #{index} requires name")
+        normalized_key = slug(item_key)
+        if normalized_key in seen:
+            raise ValueError(f"Duplicate reference item_key: {item_key}")
+        seen.add(normalized_key)
+        normalized = dict(item)
+        normalized["item_key"] = normalized_key
+        normalized["name"] = name.strip()
+        normalized["title"] = item.get("title") or name.strip()
+        normalized["status"] = item.get("status") or "active"
+        normalized["position"] = item.get("position", index)
+        normalized_items.append(normalized)
+
+    return {
+        "list_key": slug(list_key),
+        "title": title.strip(),
+        "description": raw.get("description") or "",
+        "seed_version": raw.get("seed_version", 1),
+        "items": normalized_items,
+    }
+
+
+def upsert_reference_list(graph: Any, seed: dict[str, Any]) -> dict[str, Any]:
+    timestamp = now_iso()
+    existing = get_reference_list(graph, seed["list_key"])
+    list_id = (existing or {}).get("id") or new_id()
+    list_props = {
+        "id": list_id,
+        "list_key": seed["list_key"],
+        "title": seed["title"],
+        "description": seed["description"],
+        "seed_version": seed["seed_version"],
+        "status": "active",
+        "created_at": (existing or {}).get("created_at", timestamp),
+        "updated_at": timestamp,
+    }
+    graph.upsert_node(list_id, list_props, label="ReferenceList")
+
+    existing_items = {item["item_key"]: item for item in reference_items(graph, list_id)}
+    seed_keys = {item["item_key"] for item in seed["items"]}
+    item_ids: list[str] = []
+    created = 0
+    updated = 0
+    deprecated = 0
+
+    for item in seed["items"]:
+        current = existing_items.get(item["item_key"])
+        item_id = (current or {}).get("id") or new_id()
+        props = dict(item)
+        props.update(
+            {
+                "id": item_id,
+                "list_key": seed["list_key"],
+                "category": item.get("category") or "",
+                "seed_version": seed["seed_version"],
+                "created_at": (current or {}).get("created_at", timestamp),
+                "updated_at": timestamp,
+            }
+        )
+        graph.upsert_node(item_id, props, label="ReferenceItem")
+        graph.upsert_edge(list_id, item_id, {"type": "HAS_ITEM"}, rel_type="HAS_ITEM")
+        item_ids.append(item_id)
+        if current is None:
+            created += 1
+        else:
+            updated += 1
+
+    for item_key, item in existing_items.items():
+        if item_key in seed_keys or item.get("status") == "deprecated":
+            continue
+        props = dict(item)
+        props["status"] = "deprecated"
+        props["updated_at"] = timestamp
+        graph.upsert_node(props["id"], props, label="ReferenceItem")
+        deprecated += 1
+
+    graph.reload_graph()
+    return {
+        "list_id": list_id,
+        "item_ids": item_ids,
+        "created": created,
+        "updated": updated,
+        "deprecated": deprecated,
+    }
 
 
 def upsert_artifact(
@@ -232,6 +382,35 @@ def cmd_artifact_list(_: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_reference_bootstrap(args: argparse.Namespace) -> int:
+    seed_path = Path(args.seed_yaml) if args.seed_yaml else default_reference_seed_path(args.list_key)
+    seed = validate_reference_seed(read_yaml_file(str(seed_path)))
+    if seed["list_key"] != slug(args.list_key):
+        raise ValueError(f"Seed list_key does not match requested list_key: {args.list_key}")
+    graph = open_graph()
+    try:
+        result = upsert_reference_list(graph, seed)
+    finally:
+        graph.close()
+    output({"status": "ok", "list_key": seed["list_key"], **result})
+    return 0
+
+
+def cmd_reference_get(args: argparse.Namespace) -> int:
+    graph = open_graph()
+    try:
+        reference_list = get_reference_list(graph, args.list_key)
+        if reference_list is None:
+            raise ValueError(f"ReferenceList does not exist: {slug(args.list_key)}")
+        items = reference_items(graph, reference_list["id"])
+        if not args.include_deprecated:
+            items = [item for item in items if item.get("status") != "deprecated"]
+    finally:
+        graph.close()
+    output({"status": "ok", "reference_list": reference_list, "items": items})
+    return 0
+
+
 def cmd_graph_query(args: argparse.Namespace) -> int:
     lowered = args.cypher.strip().lower()
     write_words = ("create", "merge", "set", "delete", "remove", "drop")
@@ -275,6 +454,19 @@ def build_parser() -> argparse.ArgumentParser:
 
     artifact_list = artifact_sub.add_parser("list")
     artifact_list.set_defaults(func=cmd_artifact_list)
+
+    reference = subparsers.add_parser("reference")
+    reference_sub = reference.add_subparsers(dest="reference_command", required=True)
+
+    reference_bootstrap = reference_sub.add_parser("bootstrap")
+    reference_bootstrap.add_argument("--list-key", required=True)
+    reference_bootstrap.add_argument("--seed-yaml")
+    reference_bootstrap.set_defaults(func=cmd_reference_bootstrap)
+
+    reference_get = reference_sub.add_parser("get")
+    reference_get.add_argument("--list-key", required=True)
+    reference_get.add_argument("--include-deprecated", action="store_true")
+    reference_get.set_defaults(func=cmd_reference_get)
 
     graph_query = subparsers.add_parser("graph")
     graph_sub = graph_query.add_subparsers(dest="graph_command", required=True)

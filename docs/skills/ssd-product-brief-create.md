@@ -8,7 +8,7 @@
 
 ## Purpose
 
-Creates a non-technical business/product definition explaining why the product should exist, what is being built, how it solves the problem at a high level, and who it is for.
+Creates a non-technical business/product definition explaining why the product should exist, what classification fits it, what is being built, how it solves the problem at a high level, who it is for, and the directly stated budget and team context.
 
 ## When To Use
 
@@ -18,7 +18,7 @@ Do not use for editing an existing Product Brief, technical planning, detailed r
 
 ## How It Is Used
 
-The skill applies the shared contract, checks for an existing Product Brief, gathers focused context, optionally loads confirmed source files or memory objects, optionally runs one `ssd-brainstorming` pass, drafts and audits a section payload, runs create-only validation, presents all sections for approval, and writes memory once after approval.
+The skill applies the shared contract, bootstraps and reads the Product Classification reference list from SQLite memory, checks for an existing Product Brief, gathers focused context, optionally loads confirmed source files or memory objects, optionally runs one `ssd-brainstorming` pass, drafts and audits a section payload, runs create-only validation, presents all sections and the inferred classification for approval, and writes memory once after approval.
 
 ## Inputs
 
@@ -39,6 +39,8 @@ The skill applies the shared contract, checks for an existing Product Brief, gat
 
 - Always guided; no `headless`, `autonomous`, `yolo`, or `draft-first` modes.
 - Discovery asks at most 3 focused questions only when drafting would be speculative.
+- Budget and team must come from direct user input only; otherwise they are stored as `Unknown`.
+- Product classification is inferred from source material, selected from the `product-classifications` SQLite reference list, and confirmed by user approval before storage.
 - Stored section content must be source-grounded, an approved assumption, or `Unknown`.
 - Vague labels and yes/no answers must not become complete prose.
 - Section text preserves readable newlines for bullets and paragraphs.
@@ -53,6 +55,7 @@ The skill applies the shared contract, checks for an existing Product Brief, gat
 
 - Source skill: `.opencode/skills/ssd-product-brief-create/SKILL.md`.
 - Shared contract: `.opencode/shared/product-brief-contract.md`.
+- Product classifications reference list: `.opencode/scripts/ssd_memory/memory.py reference bootstrap/get --list-key product-classifications`.
 - Memory recipe index: `.opencode/shared/recipes.md`.
 - Memory adapter: `.opencode/scripts/ssd_product_brief/memory.py`.
 
@@ -64,17 +67,17 @@ The skill applies the shared contract, checks for an existing Product Brief, gat
 
 ## Create Validation
 
-After internal review and before approval, the skill runs internal `ssd-advanced-elicitation` with `Challenge from Critical Perspective` to catch unsupported claims, shallow assumptions, overconfident positioning, missing operational constraints, hallucinated specificity, verbose thin-evidence prose, flattened formatting, and unsupported core sections.
+After internal review and before approval, the skill runs internal `ssd-advanced-elicitation` with `Challenge from Critical Perspective` to catch unsupported claims, shallow assumptions, weak or unconfirmed classification, inferred budget/team content, overconfident positioning, missing operational constraints, hallucinated specificity, verbose thin-evidence prose, flattened formatting, and unsupported core sections.
 
 It asks up to 3 validation questions, avoiding implementation, architecture, roadmap, metrics, detailed requirements, MVP scope, epics, stories, and backlog questions. The brief is refined after answers.
 
 Run one internal `Socratic Questioning` fallback only when unresolved choices would materially change audience, product-level problem, product definition, necessity versus existing tools/workflows, or core operating constraint. Cap at 3 questions, then represent remaining uncertainty as `Unknown`, assumptions, or open questions.
 
-Before approval, audit every required section. Unsupported content becomes `Unknown`; partial support keeps only the supported part and moves the rest to `Assumption:` or Open Questions. Core sections cannot be mostly inferred.
+Before approval, audit every required section. Unsupported content becomes `Unknown`; partial support keeps only the supported part and moves the rest to `Assumption:` or Open Questions. Classification must use returned `ReferenceItem.name` values and be confirmed by the user. Budget and team must be direct user input or `Unknown`. Core sections other than classification cannot be mostly inferred.
 
 ## Completion Criteria
 
-Completes when source objects are confirmed if used, discovery is done, accepted ideation is incorporated, section grounding and validation pass, the user approves all sections, and the single create command succeeds.
+Completes when source objects are confirmed if used, discovery is done, accepted ideation is incorporated, section grounding and validation pass, the user approves all sections and confirms the classification, and the single create command succeeds.
 
 Stops or blocks when Product Brief memory already exists, review finds a misleading brief that cannot be resolved, approval is not obtained, or memory create fails.
 
@@ -82,7 +85,7 @@ Stops or blocks when Product Brief memory already exists, review finds a mislead
 
 Invoke with product/problem area and optional initial context. If missing, the skill asks only: "What product, project, or problem area should we explore for the product brief?"
 
-The approval review shows the complete proposed brief, source memory objects, assumptions, open questions, and validation summary before the final approval/change instruction.
+The approval review shows the complete proposed brief, source memory objects, inferred classification with rationale and uncertainty, assumptions, open questions, and validation summary before the final approval/change instruction.
 
 ## Related Files
 
@@ -90,11 +93,13 @@ The approval review shows the complete proposed brief, source memory objects, as
 - Related skill: `ssd-brainstorming`.
 - Memory contract: `docs/memory/ssd-product-brief.md`.
 - Memory recipe index: `.opencode/shared/recipes.md`.
+- Product classifications reference list: `.opencode/scripts/ssd_memory/memory.py reference bootstrap/get --list-key product-classifications`.
 
 ## Notes
 
 - Exclude technical stack, architecture, implementation details, detailed requirements, MVP scope, metrics, epics, stories, delivery plans, and engineering tasks.
-- Do not store inferred section content as fact or flatten bullets/paragraphs.
+- Do not store inferred section content as fact or flatten bullets/paragraphs, except product classification may be inferred when it is reference-list-backed and confirmed by the user.
+- Do not infer budget or team; use direct user input or `Unknown`.
 - If a stored memory object is requested, use `.opencode/shared/recipes.md` and only the relevant recipe.
 - Do not scan artifacts, use BMad config/steps, call `.agents/skills/bmad-product-brief`, create markdown/temp drafts, skip review or create validation, output only raw JSON/tool results, or write before approval.
 - Editing existing Product Brief memory belongs to `ssd-product-brief-edit`.

@@ -48,6 +48,7 @@ export type NavigationView = {
 export type HomeSummaryView = {
 	artifactCount: number | null;
 	brainstormCount: number | null;
+	listCount: number | null;
 	error: GraphReadErrorView | null;
 };
 
@@ -115,4 +116,32 @@ export type NodeDetailView = {
 	node: GraphNodeSummary;
 	incoming: GraphRelationshipView[];
 	outgoing: GraphRelationshipView[];
+};
+
+export type ReferenceListSummary = {
+	id: string;
+	listKey: string;
+	title: string;
+	description: string;
+	status: string;
+	seedVersion: number;
+	itemCount: number;
+	updatedAt: string;
+};
+
+export type ReferenceItemSummary = {
+	id: string;
+	listKey: string;
+	itemKey: string;
+	title: string;
+	name: string;
+	category: string;
+	status: string;
+	summary: string;
+	properties: Record<string, unknown>;
+};
+
+export type ReferenceListDetailView = {
+	list: ReferenceListSummary;
+	items: ReferenceItemSummary[];
 };

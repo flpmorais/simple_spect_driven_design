@@ -22,10 +22,13 @@ Store the Product Brief as SQLite-backed `Artifact` memory with kind `product-br
 | Section Key | Heading |
 | --- | --- |
 | `why-this-exists` | Why This Exists |
+| `product-classification` | Product Classification |
 | `product-definition` | Product Definition |
 | `problem` | Problem |
 | `high-level-solution` | High-Level Solution |
 | `audience` | Audience |
+| `budget` | Budget |
+| `team` | Team |
 | `necessity-and-differentiation` | Necessity And Differentiation |
 | `positioning` | Positioning |
 | `practical-constraints` | Practical Constraints |
@@ -39,6 +42,42 @@ Every stored statement must be grounded in explicit user input, confirmed source
 Do not turn broad labels such as "I am a painter", "I need an app", or yes/no answers into complete prose. If support is partial, keep only the supported part and move the rest to `Unknown`, `Assumption:`, or Open Questions.
 
 Preserve readable line breaks in stored section text: bullets each start on their own `- ` line; paragraphs are separated by newline characters; never flatten bullets or paragraphs into one inline string.
+
+## Product Classification
+
+Before drafting or editing `product-classification`, ensure the SQLite reference list is bootstrapped, then read it through semantic memory commands:
+
+```text
+python .opencode/scripts/ssd_memory/memory.py reference bootstrap --list-key product-classifications
+python .opencode/scripts/ssd_memory/memory.py reference get --list-key product-classifications
+```
+
+Classification rules:
+
+- Store one primary classification and optional secondary classification; use `Secondary: None` when absent.
+- Values must be exact returned `ReferenceItem.name` values; primary and secondary must differ.
+- Classification may be inferred from allowed sources, but must be shown and explicitly confirmed in Product Brief review before memory write.
+- Include a short source-grounded rationale and uncertainty when relevant.
+- Do not invent classifications outside the catalog.
+
+Use this section shape:
+
+```text
+Primary: <catalog Name>
+Secondary: <catalog Name or None>
+
+Rationale:
+<short source-grounded rationale>
+
+Uncertainty:
+<uncertainty or None>
+```
+
+## Direct Input Sections
+
+`budget` and `team` must come from direct user input only. Do not infer them from classification, product type, company size, source files, brainstorms, constraints, or context.
+
+If direct user input is missing, store `Unknown`. If the user gives a partial answer, store only the stated part and keep the rest `Unknown` or in Open Questions.
 
 ## Optional Ideation
 
@@ -54,7 +93,7 @@ Review the section payload before presenting it. Do not call product-brief revie
 
 Do not write while the payload has invented specificity, generic `why`/`problem`/`differentiation`, inference from vague answers, verbose thin-evidence prose, flattened formatting, missing audience or constraints without `Unknown`, source contradictions, or forbidden technical/PRD/MVP/roadmap/metrics/delivery/epic/story content.
 
-Also verify the solution connects to the problem, positioning is clear, assumptions are explicit, open questions are useful, and every section is grounded in allowed evidence or `Unknown`.
+Also verify the solution connects to the problem, classification uses the catalog and is user-confirmed, budget/team are direct input or `Unknown`, positioning is clear, assumptions are explicit, open questions are useful, and every section is grounded in allowed evidence or `Unknown`.
 
 Ask the user only for strategic choices: audience ambiguity, conflicting positioning, contradictory constraints, major assumption inclusion/removal, or multiple viable product directions.
 
@@ -89,10 +128,13 @@ Pass the JSON payload on stdin:
   "change_summary": "brief explanation of why the brief changed",
   "sections": {
     "why-this-exists": "...",
+    "product-classification": "...",
     "product-definition": "...",
     "problem": "...",
     "high-level-solution": "...",
     "audience": "...",
+    "budget": "...",
+    "team": "...",
     "necessity-and-differentiation": "...",
     "positioning": "...",
     "practical-constraints": "...",

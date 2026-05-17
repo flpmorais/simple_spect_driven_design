@@ -23,6 +23,7 @@ Input:
 Rules:
 
 - Read and apply `.opencode/shared/product-brief-contract.md` first.
+- Bootstrap and read `product-classifications` through `.opencode/scripts/ssd_memory/memory.py reference` before drafting classification.
 - Always guided. Do not offer `headless`, `autonomous`, `yolo`, or `draft-first` modes.
 - If `product_or_problem_area` is missing, ask only: "What product, project, or problem area should we explore for the product brief?"
 - Ask once near the start whether to include an existing stored memory object or file unless the request names one.
@@ -37,6 +38,7 @@ Rules:
 
 - Shared contract: `.opencode/shared/product-brief-contract.md`
 - Memory adapter: `.opencode/scripts/ssd_product_brief/memory.py`
+- Product classifications reference list: `.opencode/scripts/ssd_memory/memory.py reference bootstrap/get --list-key product-classifications`
 - Artifact recipe index: `.opencode/shared/recipes.md`
 - Artifact kind: `product-brief`
 - Artifact ID: UUID returned by memory command
@@ -80,7 +82,7 @@ I found this source memory object:
 Use this as Product Brief source material?
 ```
 
-Do not run a questionnaire by default. Ask at most 3 focused questions only when drafting would be speculative. If the user does not know, record `Unknown` or a named assumption and continue.
+Do not run a questionnaire by default. Ask at most 3 focused questions only when drafting would be speculative. If budget or team are missing, ask one concise combined question; otherwise store `Unknown` per contract.
 
 Track evidence per required section. Vague fragments, broad labels, and yes/no answers are weak evidence unless they directly establish a product-level fact.
 
@@ -121,13 +123,22 @@ Use returned brainstorm memory handoff and idea references as source material.
 
 ### 5. Draft Section Payload
 
+Before drafting, run:
+
+```text
+python .opencode/scripts/ssd_memory/memory.py reference bootstrap --list-key product-classifications
+python .opencode/scripts/ssd_memory/memory.py reference get --list-key product-classifications
+```
+
 Draft a JSON-compatible Product Brief section payload in working context using the required section keys from the shared contract.
 
 Allowed sources: product/problem area, initial context, focused discovery, direct files, loaded artifacts, optional brainstorm memory, approved assumptions, or `Unknown`.
 
+Apply contract rules for `product-classification`, `budget`, and `team`: reference-list-backed inferred classification requires user confirmation; budget/team are direct-input-only or `Unknown`.
+
 Do not pad thin source material into polished prose. Unsupported or partial content becomes `Unknown`, `Assumption:`, or Open Questions.
 
-Core sections need direct support before approval review: `why-this-exists`, `product-definition`, `problem`, `high-level-solution`, and `audience`.
+Core sections need direct support before approval review: `why-this-exists`, `product-classification`, `product-definition`, `problem`, `high-level-solution`, and `audience`.
 
 Preserve readable formatting in `canonical_text`: bullets each start on their own `- ` line; paragraphs are separated by newline characters; never flatten bullets or paragraphs into one inline string.
 
@@ -140,14 +151,15 @@ Run a grounding audit:
 1. Identify explicit source facts for each required section.
 2. Replace unsupported content with `Unknown`.
 3. Move partial unsupported content to Open Questions or `Assumption:`.
-4. Block approval review if core sections are mostly inferred.
-5. Verify bullet and paragraph newlines are preserved.
+4. Verify classification, budget, and team follow contract rules.
+5. Block approval review if core sections other than classification are mostly inferred.
+6. Verify bullet and paragraph newlines are preserved.
 
 If core sections remain generic, inferred, or unsupported, ask up to 3 focused evidence questions or recommend the optional ideation pass if not already offered. If declined or unanswered, keep uncertainty as `Unknown` or `Assumption:` and do not present it as complete.
 
 ### 7. Create Validation Gate
 
-Before approval, always run one internal `ssd-advanced-elicitation` pass using `Challenge from Critical Perspective`. This create-only gate stress-tests unsupported claims, shallow assumptions, overconfident positioning, missing operational constraints, hallucinated specificity, verbose thin-evidence prose, flattened formatting, and unsupported core sections.
+Before approval, always run one internal `ssd-advanced-elicitation` pass using `Challenge from Critical Perspective`. This create-only gate stress-tests unsupported claims, shallow assumptions, unconfirmed or weak classification, budget/team inference, overconfident positioning, missing constraints, hallucinated specificity, verbose thin-evidence prose, flattened formatting, and unsupported core sections.
 
 Use revision-ready output. Ask up to 3 validation questions, normally 3 for minimal-input drafts. Questions must target only the issues above and must not cover implementation, architecture, roadmap, metrics, detailed requirements, MVP scope, epics, stories, feature backlog, or general brainstorming.
 
@@ -161,7 +173,7 @@ Do not present the Product Brief for approval if validation still finds unsuppor
 
 ### 8. User Section Validation Gate
 
-Present the complete proposed Product Brief in human-readable Markdown before writing memory. Include every required heading and proposed content, then show source memory objects, assumptions to store, open questions to keep, and validation summary.
+Present the complete proposed Product Brief in human-readable Markdown before writing memory. Include every required heading and proposed content, then sources, classification confirmation, assumptions, open questions, and validation summary.
 
 Approval prompt placement: never ask before showing the content. Put the approval/change instruction as the final paragraph.
 
@@ -175,6 +187,9 @@ Proposed Product Brief
 Source Memory Objects Used
 <sources or None>
 
+Classification To Confirm
+<primary, secondary, rationale, and uncertainty>
+
 Assumptions That Will Be Stored
 <assumptions or None>
 
@@ -184,10 +199,10 @@ Open Questions That Will Remain Unresolved
 Validation Summary
 <create validation summary>
 
-Review complete. Reply with `approve` or `create it` to store this Product Brief, or tell me what to change by section.
+Review complete. Reply with `approve` or `create it` to confirm the classification and store this Product Brief, or tell me what to change by section.
 ```
 
-Do not call `create` until the user explicitly approves after seeing the reviewed sections. Approval must be affirmative (`approved`, `create it`, `looks good`, or equivalent). Clarification, discussion, source selection, or answers to questions are not approval.
+Do not call `create` until the user explicitly approves after seeing the reviewed sections and inferred classification. Approval must be affirmative (`approved`, `create it`, `looks good`, or equivalent) and counts as classification confirmation only after the classification is shown. Clarification, discussion, source selection, or answers to questions are not approval.
 
 Before `create`, recheck line breaks and rewrite flattened bullets such as `- first - second - third` as newline-separated bullets.
 

@@ -10,6 +10,7 @@ Current shapes:
 
 - `Artifact`: durable document-like outputs.
 - `Brainstorm`: brainstorm runs and accepted ideas.
+- `ReferenceList`: reusable seeded list data such as product classifications.
 
 Add nodes, relationships, commands, or routes only when current contracts cannot represent the needed durable state or provenance.
 
@@ -21,10 +22,11 @@ For any requested memory change, decide in this order:
 2. Is it a document-like SSD output? Use `Artifact`.
 3. Is it brainstorm run state or accepted ideas? Use `Brainstorm` / `BrainstormIdea`.
 4. Is it only a new section/field of an existing artifact? Update that unit contract only.
-5. Is it only consumption of existing memory? Add dependency/use docs and read command use; do not create nodes.
-6. Is a new durable object with independent lifecycle required? Add a new unit-owned memory contract.
-7. Is a relationship needed for retrieval/provenance? Use an existing relationship type first.
-8. Add new relationship type only if no current type is semantically correct.
+5. Is it reusable list data? Use `ReferenceList` seeded from `.opencode/shared/reference-data/` and consumed through semantic commands.
+6. Is it only consumption of existing memory? Add dependency/use docs and read command use; do not create nodes.
+7. Is a new durable object with independent lifecycle required? Add a new unit-owned memory contract.
+8. Is a relationship needed for retrieval/provenance? Use an existing relationship type first.
+9. Add new relationship type only if no current type is semantically correct.
 
 ## Add Artifact Memory
 
@@ -175,10 +177,13 @@ Artifact sections:
 
 ```text
 why-this-exists
+product-classification
 product-definition
 problem
 high-level-solution
 audience
+budget
+team
 necessity-and-differentiation
 positioning
 practical-constraints

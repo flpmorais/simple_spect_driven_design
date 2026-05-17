@@ -29,6 +29,10 @@
 		<span>Brainstorms</span>
 		Browse {data.summary.brainstormCount ?? 'memory-backed'} brainstorm entities.
 	</a>
+	<a href="/lists">
+		<span>Lists</span>
+		Browse {data.summary.listCount ?? 'memory-backed'} reusable reference lists.
+	</a>
 	<a href="/graph">
 		<span>Graph</span>
 		Inspect graph overview and diagnostics.

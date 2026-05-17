@@ -1,0 +1,155 @@
+list_key: product-classifications
+title: Product Classifications
+description: Product classification taxonomy for Product Brief primary and secondary classification.
+seed_version: 1
+items:
+  - item_key: startup-mvp
+    name: Startup MVP
+    definition: Small team, limited budget, fast validation, high uncertainty.
+    optimizes_for: learning speed over scalability.
+    status: active
+  - item_key: enterprise-platform
+    name: Enterprise Platform
+    definition: Large organizations, governance-heavy, integrations, permissions, compliance, long lifecycle.
+    optimizes_for: stability and organizational scalability.
+    status: active
+  - item_key: internal-business-tool
+    name: Internal Business Tool
+    definition: Used by employees, not customers.
+    optimizes_for: operational efficiency over polish.
+    status: active
+  - item_key: ai-native-product
+    name: AI-Native Product
+    definition: Core workflows depend on LLMs, agents, or semantic systems.
+    optimizes_for: automation and contextual intelligence.
+    status: active
+  - item_key: developer-platform-api-product
+    name: Developer Platform / API Product
+    definition: Product is the API, platform, or ecosystem.
+    optimizes_for: extensibility, developer experience, documentation, and integrations.
+    status: active
+  - item_key: consumer-mobile-app
+    name: Consumer Mobile App
+    definition: Mass-market UX-driven application.
+    optimizes_for: engagement, retention, and simplicity.
+    status: active
+  - item_key: b2b-saas
+    name: B2B SaaS
+    definition: Subscription business software for companies.
+    optimizes_for: onboarding, retention, admin/governance, and ROI.
+    status: active
+  - item_key: marketplace-platform
+    name: Marketplace Platform
+    definition: Connects buyers, sellers, providers, or consumers.
+    optimizes_for: liquidity, trust, and network effects.
+    status: active
+  - item_key: data-platform-analytics-product
+    name: Data Platform / Analytics Product
+    definition: Ingestion, processing, querying, dashboards, or insights.
+    optimizes_for: correctness, performance, and observability.
+    status: active
+  - item_key: mission-critical-system
+    name: Mission-Critical System
+    definition: Failure has serious operational, financial, or safety consequences.
+    optimizes_for: reliability, redundancy, and recoverability.
+    status: active
+  - item_key: regulated-industry-system
+    name: Regulated Industry System
+    definition: Healthcare, banking, government, insurance, defense, or another regulated industry system.
+    optimizes_for: auditability, compliance, and traceability.
+    status: active
+  - item_key: collaboration-platform
+    name: Collaboration Platform
+    definition: Chat, docs, workflows, shared spaces, or coordination.
+    optimizes_for: real-time sync, permissions, and shared context.
+    status: active
+  - item_key: workflow-automation-platform
+    name: Workflow Automation Platform
+    definition: Automates processes, integrations, or tasks across systems.
+    optimizes_for: orchestration, reliability, and extensibility.
+    status: active
+  - item_key: cms-knowledge-platform
+    name: CMS / Knowledge Platform
+    definition: Content creation, publishing, organization, or retrieval.
+    optimizes_for: editing workflows and discoverability.
+    status: active
+  - item_key: embedded-edge-system
+    name: Embedded / Edge System
+    definition: Runs close to hardware or devices.
+    optimizes_for: low latency, offline capability, and resource constraints.
+    status: active
+  - item_key: iot-platform
+    name: IoT Platform
+    definition: Manages fleets of devices or sensors.
+    optimizes_for: telemetry, provisioning, and connectivity resilience.
+    status: active
+  - item_key: ecommerce-platform
+    name: E-commerce Platform
+    definition: Catalogs, carts, payments, logistics, or promotions.
+    optimizes_for: conversion, transaction reliability, and inventory flows.
+    status: active
+  - item_key: social-platform
+    name: Social Platform
+    definition: User-generated content plus interaction or network effects.
+    optimizes_for: engagement loops and moderation.
+    status: active
+  - item_key: gaming-platform-live-service
+    name: Gaming Platform / Live Service
+    definition: Persistent online game or service ecosystem.
+    optimizes_for: latency, content pipelines, retention, and live operations.
+    status: active
+  - item_key: multi-tenant-platform
+    name: Multi-Tenant Platform
+    definition: Single system serving many organizations or customers.
+    optimizes_for: tenant isolation, scalability, and configurability.
+    status: active
+  - item_key: white-label-product
+    name: White-Label Product
+    definition: Same core system customized for multiple brands or customers.
+    optimizes_for: configurability and tenant branding.
+    status: active
+  - item_key: offline-first-product
+    name: Offline-First Product
+    definition: Works disconnected and syncs later.
+    optimizes_for: conflict resolution and local resilience.
+    status: active
+  - item_key: event-driven-integration-hub
+    name: Event-Driven Integration Hub
+    definition: Primarily integration or orchestration between systems.
+    optimizes_for: reliability, asynchronous processing, and observability.
+    status: active
+  - item_key: real-time-system
+    name: Real-Time System
+    definition: Needs immediate responsiveness.
+    optimizes_for: low latency and predictable performance.
+    status: active
+  - item_key: research-experimental-product
+    name: Research / Experimental Product
+    definition: Exploratory systems with evolving requirements.
+    optimizes_for: adaptability and iteration speed.
+    status: active
+  - item_key: legacy-modernization-program
+    name: Legacy Modernization Program
+    definition: Replacing or extending old enterprise systems.
+    optimizes_for: migration safety and coexistence.
+    status: active
+  - item_key: platform-engineering-product
+    name: Platform Engineering Product
+    definition: Internal developer platforms or toolchains.
+    optimizes_for: developer productivity and operational standardization.
+    status: active
+  - item_key: knowledge-work-augmentation-tool
+    name: Knowledge Work Augmentation Tool
+    definition: Helps humans think, write, analyze, or design better.
+    optimizes_for: context management and cognitive workflows.
+    status: active
+  - item_key: government-public-sector-platform
+    name: Government/Public Sector Platform
+    definition: Public-facing or administrative government systems.
+    optimizes_for: accessibility, procurement constraints, and auditability.
+    status: active
+  - item_key: hypergrowth-scale-up-platform
+    name: Hypergrowth Scale-Up Platform
+    definition: Past MVP, rapidly scaling users, team, or infrastructure.
+    optimizes_for: organizational and technical scaling simultaneously.
+    status: active

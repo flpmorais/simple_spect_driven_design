@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from .conftest import assert_uuid, stdout_json, write_json
+from .conftest import assert_uuid, stdout_json, write_json, write_text
 
 
 def valid_sections():
@@ -135,6 +135,128 @@ def test_artifact_error_paths(generic_memory, tmp_path, args):
                 change_summary="Update",
             )
         )
+
+
+def test_reference_bootstrap_get_update_and_deprecate(generic_memory, tmp_path, args, capsys):
+    seed_v1 = write_text(
+        tmp_path / "classifications.yaml",
+        """
+list_key: product-classifications
+title: Product Classifications
+description: Product classification taxonomy.
+seed_version: 1
+items:
+  - item_key: startup-mvp
+    name: Startup MVP
+    definition: Small team validation.
+    optimizes_for: learning speed.
+    status: active
+  - item_key: b2b-saas
+    name: B2B SaaS
+    definition: Subscription software for companies.
+    optimizes_for: retention.
+    status: active
+""".strip(),
+    )
+
+    generic_memory.cmd_reference_bootstrap(
+        args(list_key="product-classifications", seed_yaml=str(seed_v1))
+    )
+    created = stdout_json(capsys)
+    assert created["status"] == "ok"
+    assert created["list_key"] == "product-classifications"
+    assert_uuid(created["list_id"])
+    assert len(created["item_ids"]) == 2
+    assert created["created"] == 2
+
+    generic_memory.cmd_reference_bootstrap(
+        args(list_key="product-classifications", seed_yaml=str(seed_v1))
+    )
+    repeated = stdout_json(capsys)
+    assert repeated["list_id"] == created["list_id"]
+    assert repeated["created"] == 0
+    assert repeated["updated"] == 2
+
+    seed_v2 = write_text(
+        tmp_path / "classifications-v2.yaml",
+        """
+list_key: product-classifications
+title: Product Classifications
+description: Product classification taxonomy.
+seed_version: 2
+items:
+  - item_key: startup-mvp
+    name: Startup MVP
+    definition: Small team, limited budget, fast validation.
+    optimizes_for: learning speed over scalability.
+    status: active
+""".strip(),
+    )
+    generic_memory.cmd_reference_bootstrap(
+        args(list_key="product-classifications", seed_yaml=str(seed_v2))
+    )
+    changed = stdout_json(capsys)
+    assert changed["list_id"] == created["list_id"]
+    assert changed["deprecated"] == 1
+
+    generic_memory.cmd_reference_get(
+        args(list_key="product-classifications", include_deprecated=False)
+    )
+    current = stdout_json(capsys)
+    assert current["reference_list"]["list_key"] == "product-classifications"
+    assert [item["item_key"] for item in current["items"]] == ["startup-mvp"]
+    assert current["items"][0]["definition"] == "Small team, limited budget, fast validation."
+
+    generic_memory.cmd_reference_get(
+        args(list_key="product-classifications", include_deprecated=True)
+    )
+    with_deprecated = stdout_json(capsys)
+    assert [item["item_key"] for item in with_deprecated["items"]] == ["startup-mvp", "b2b-saas"]
+    assert with_deprecated["items"][1]["status"] == "deprecated"
+
+
+def test_reference_validation_and_missing_list_failures(generic_memory, tmp_path, args):
+    seed = write_text(
+        tmp_path / "wrong.yaml",
+        """
+list_key: wrong-list
+title: Wrong
+items:
+  - item_key: one
+    name: One
+""".strip(),
+    )
+    with pytest.raises(ValueError, match="does not match requested list_key"):
+        generic_memory.cmd_reference_bootstrap(
+            args(list_key="product-classifications", seed_yaml=str(seed))
+        )
+    with pytest.raises(ValueError, match="ReferenceList does not exist"):
+        generic_memory.cmd_reference_get(
+            args(list_key="product-classifications", include_deprecated=False)
+        )
+
+
+def test_reference_bootstrap_uses_default_seed_path(generic_memory, tmp_path, monkeypatch, args, capsys):
+    seed_dir = tmp_path / "reference-data"
+    seed_dir.mkdir()
+    write_text(
+        seed_dir / "product-classifications.yaml",
+        """
+list_key: product-classifications
+title: Product Classifications
+items:
+  - item_key: startup-mvp
+    name: Startup MVP
+""".strip(),
+    )
+    monkeypatch.setattr(generic_memory, "REFERENCE_DATA_DIR", seed_dir)
+
+    generic_memory.cmd_reference_bootstrap(
+        args(list_key="product-classifications", seed_yaml=None)
+    )
+    bootstrapped = stdout_json(capsys)
+    assert bootstrapped["status"] == "ok"
+    assert bootstrapped["created"] == 1
 
 
 def test_graph_query_read_and_write_guard(generic_memory, args, capsys):

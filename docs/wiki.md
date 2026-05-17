@@ -53,6 +53,7 @@ Baseline groups:
 Home
 Artifacts
 Brainstorms
+Lists
 Graph
 ```
 
@@ -72,6 +73,8 @@ Baseline routes:
 /artifacts/:kind          current artifact page
 /brainstorms              brainstorm index
 /brainstorms/:id          brainstorm page
+/lists                    reference list index
+/lists/:listKey           reference list page
 /nodes/:id                generic node detail
 /graph                    graph overview
 ```
@@ -122,6 +125,27 @@ artifact kind -> page component
 
 If no custom page is registered, render the generic artifact page.
 
+## Reference List Pages
+
+Reference lists have a generic collection and list-detail page based on the shared reference list model.
+
+Routes:
+
+```text
+/lists
+/lists/:listKey
+```
+
+Generic list pages show:
+
+- list metadata;
+- status;
+- seed version;
+- item count;
+- all items linked to their generic node pages.
+
+Reference item detail pages are intentionally not a separate route. Use `/nodes/:id` for item-level inspection unless a future workflow requires a polished item URL.
+
 ## View Models
 
 Do not pass raw graph rows directly to Svelte components.
@@ -133,6 +157,7 @@ NavigationView
 ArtifactIndexView
 ArtifactDetailView
 BrainstormDetailView
+ReferenceListDetailView
 NodeDetailView
 GraphOverviewView
 ```

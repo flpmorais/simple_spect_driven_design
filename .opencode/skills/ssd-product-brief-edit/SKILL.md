@@ -23,6 +23,7 @@ Input:
 Rules:
 
 - Read and apply `.opencode/shared/product-brief-contract.md` first.
+- Bootstrap and read `product-classifications` through `.opencode/scripts/ssd_memory/memory.py reference` before editing classification.
 - If `change_request` is missing, ask only: "What change should we make to the Product Brief?"
 - If `.opencode/scripts/ssd_product_brief/memory.py get` reports no Product Brief, stop and tell the user to run `ssd-product-brief-create` first.
 - Update Product Brief memory only after inline review and explicit approval, through `.opencode/scripts/ssd_product_brief/memory.py update`.
@@ -33,6 +34,7 @@ Rules:
 ## Memory
 
 - Shared contract: `.opencode/shared/product-brief-contract.md`
+- Product classifications reference list: `.opencode/scripts/ssd_memory/memory.py reference bootstrap/get --list-key product-classifications`
 - Memory adapter: `.opencode/scripts/ssd_product_brief/memory.py`
 - Artifact kind: `product-brief`
 - Artifact ID: UUID returned by memory command
@@ -64,7 +66,7 @@ Classify as one of: minor wording cleanup, section update, positioning or audien
 
 ### 3. Clarify
 
-Ask at most 3 questions only for ambiguity, contradiction, or strategic choice. If the user does not know, record `Unknown` or a named assumption and continue when safe.
+Ask at most 3 questions only for ambiguity, contradiction, strategic choice, or missing direct input for requested budget/team changes. If unknown, continue safely; budget/team become `Unknown` unless directly stated.
 
 ### 4. Optional Ideation
 
@@ -89,9 +91,18 @@ Use returned brainstorm memory handoff and idea references as edit source materi
 
 ### 5. Draft Edited Section Payload
 
+Before editing classification, run:
+
+```text
+python .opencode/scripts/ssd_memory/memory.py reference bootstrap --list-key product-classifications
+python .opencode/scripts/ssd_memory/memory.py reference get --list-key product-classifications
+```
+
 Create an edited Product Brief section payload in working context from current memory sections.
 
 Apply only requested changes, required consistency fixes, and source-backed additions from clarification or optional ideation.
+
+Apply contract rules for changed `product-classification`, `budget`, and `team`: reference-list-backed inferred classification requires user confirmation; budget/team are direct-input-only or `Unknown`.
 
 Preserve all required section keys. Preserve readable `canonical_text`: bullets each start on their own `- ` line; paragraphs are newline-separated; never flatten bullets or paragraphs into one inline string.
 
@@ -105,6 +116,8 @@ Validate the change, not the full document:
 - Show a concise change summary and only changed sections.
 - For each changed section, show before/after bullets or an equivalent Markdown delta.
 - Include only affected sources, assumptions, and open questions.
+- If classification changed, show primary, secondary, rationale, uncertainty, and confirm through final approval.
+- If budget or team changed, verify direct user input or `Unknown`.
 - Do not display unchanged sections unless the user asks.
 - Offer: "Do you want to see the full final document or any specific section before approval?"
 - Verify changed sections preserve newline-separated bullets and paragraphs before asking for approval.
@@ -126,10 +139,10 @@ Affected Assumptions, Open Questions, And Sources
 Optional Full Review
 If you want, ask to see the full final document or any specific section before approval.
 
-Review complete. Reply with `approve` or `update it` to update the Product Brief, or tell me what to change by section.
+Review complete. Reply with `approve` or `update it` to confirm the classification if changed and update the Product Brief, or tell me what to change by section.
 ```
 
-Do not run `update` until explicit approval after the focused review. If the edit remains generic, conflicted, or assumption-heavy, recommend the single optional ideation pass if not already used; if declined, use `Unknown` or `Assumption:` where safe, or block if misleading.
+Do not run `update` until explicit approval after the focused review. If classification changed, approval confirms it only after it is shown. If the edit remains generic, conflicted, or assumption-heavy, recommend the single optional ideation pass if not already used; if declined, use `Unknown` or `Assumption:` where safe, or block if misleading.
 
 ### 7. Apply Edit
 
